@@ -1,0 +1,10 @@
+{
+  "block.curiosity_researches.research_table": "Research Table",
+
+  "item.curiosity_researches.common_research": "Common Research",
+  "item.curiosity_researches.uncommon_research": "Uncommon Research",
+  "item.curiosity_researches.rare_research": "Rare Research",
+  "item.curiosity_researches.epic_research": "Epic Research",
+  "item.curiosity_researches.legendary_research": "Legendary Research",
+  "item.curiosity_researches.mythic_research": "Mythic Research"
+}

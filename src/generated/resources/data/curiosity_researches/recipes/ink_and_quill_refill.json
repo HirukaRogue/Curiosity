@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "minecraft:black_dye"
+    },
+    {
+      "item": "curiosity_researches:empty_ink_and_quill"
+    }
+  ],
+  "result": {
+    "item": "curiosity_researches:ink_and_quill"
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "curiosity_researches:item/shared_research_book"
+  }
+}
