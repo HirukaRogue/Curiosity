@@ -13,6 +13,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.LevelResource;
 
+import javax.annotation.Nullable;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import java.io.File;
@@ -23,29 +24,35 @@ import java.util.*;
 
 public class KnowledgeData {
     private static final Gson GSON = (new GsonBuilder()).registerTypeAdapter(ResourceLocation.class, new ResourceLocation.Serializer()).setPrettyPrinting().create();
+    @Nullable
     private final Path knowledgeDir;
     private static final Path encyclopediaDir = Minecraft.getInstance().gameDirectory.toPath().resolve("encyclopedia");
 
-    public KnowledgeData(Level level) {
-        if (level instanceof ServerLevel serverLevel) {
-            MinecraftServer server = serverLevel.getServer();
-            Path worldRoot = server.getWorldPath(LevelResource.ROOT);
-
-            this.knowledgeDir = worldRoot.resolve("curiosityresearches").resolve("playerdata");
-        } else {
-            Minecraft mc = Minecraft.getInstance();
-            if (mc.getSingleplayerServer() != null) {
-                Path worldRoot = mc.getSingleplayerServer().getWorldPath(LevelResource.ROOT);
+    public KnowledgeData(@Nullable Level level) {
+        if (level != null) {
+            if (level instanceof ServerLevel serverLevel) {
+                MinecraftServer server = serverLevel.getServer();
+                Path worldRoot = server.getWorldPath(LevelResource.ROOT);
 
                 this.knowledgeDir = worldRoot.resolve("curiosityresearches").resolve("playerdata");
             } else {
-                throw new RuntimeException("PlayerKnowledgeData can only be initialized in a server or singleplayer context.");
+                Minecraft mc = Minecraft.getInstance();
+                if (mc.getSingleplayerServer() != null) {
+                    Path worldRoot = mc.getSingleplayerServer().getWorldPath(LevelResource.ROOT);
+
+                    this.knowledgeDir = worldRoot.resolve("curiosityresearches").resolve("playerdata");
+                } else {
+                    throw new RuntimeException("PlayerKnowledgeData can only be initialized in a server or singleplayer context.");
+                }
             }
-        }
-        try {
-            Files.createDirectories(knowledgeDir);
-        } catch (IOException e) {
-            CuriosityMod.LOGGER.error("Failed to create knowledge directory: " + e.getMessage());
+            try {
+                Files.createDirectories(knowledgeDir);
+            } catch (IOException e) {
+                CuriosityMod.LOGGER.error("Failed to create knowledge directory: " + e.getMessage());
+            }
+        } else {
+            this.knowledgeDir = null;
+            CuriosityMod.LOGGER.error("PlayerKnowledgeData initialized with null level.");
         }
     }
 

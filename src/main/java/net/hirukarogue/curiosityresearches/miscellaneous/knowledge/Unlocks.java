@@ -8,18 +8,14 @@ import net.minecraft.world.level.block.Block;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Unlocks {
-    @Nullable
     private final List<Item> unlocked_items;
-    @Nullable
     private final List<TagKey<Item>> unlocked_tags;
-    @Nullable
     private final List<Knowledge> unlocked_knowledge;
-    @Nullable
     private final List<Block> unlocked_blocks;
-    @Nullable
     private final List<String> unlocked_recipes;
 
     public static Codec<Unlocks> CODEC = RecordCodecBuilder.create(instance -> instance.group(
@@ -42,33 +38,33 @@ public class Unlocks {
 
     public Unlocks(@Nullable List<Item> unlocked_items, @Nullable List<TagKey<Item>> unlocked_tags, @Nullable List<Knowledge> unlocked_knowledge, @Nullable List<Block> unlocked_blocks, @Nullable List<String> unlocked_recipes) {
         if (unlocked_items == null) {
-            this.unlocked_items = null;
+            this.unlocked_items = new ArrayList<>();
         } else {
-            this.unlocked_items = unlocked_items.isEmpty() ? null : unlocked_items;
+            this.unlocked_items = unlocked_items.isEmpty() ? new ArrayList<>() : unlocked_items;
         }
 
         if (unlocked_tags == null) {
             this.unlocked_tags = null;
         } else {
-            this.unlocked_tags = unlocked_tags.isEmpty() ? null : unlocked_tags;
+            this.unlocked_tags = unlocked_tags.isEmpty() ? new ArrayList<>() : unlocked_tags;
         }
 
         if (unlocked_knowledge == null) {
-            this.unlocked_knowledge = null;
+            this.unlocked_knowledge = new ArrayList<>();
         } else {
-            this.unlocked_knowledge = unlocked_knowledge.isEmpty() ? null : unlocked_knowledge;
+            this.unlocked_knowledge = unlocked_knowledge.isEmpty() ? new ArrayList<>() : unlocked_knowledge;
         }
 
         if (unlocked_blocks == null) {
-            this.unlocked_blocks = null;
+            this.unlocked_blocks = new ArrayList<>();
         } else {
-            this.unlocked_blocks = unlocked_blocks.isEmpty() ? null : unlocked_blocks;
+            this.unlocked_blocks = unlocked_blocks.isEmpty() ? new ArrayList<>() : unlocked_blocks;
         }
 
         if (unlocked_recipes == null) {
-            this.unlocked_recipes = null;
+            this.unlocked_recipes = new ArrayList<>();
         } else {
-            this.unlocked_recipes = unlocked_recipes.isEmpty() ? null : unlocked_recipes;
+            this.unlocked_recipes = unlocked_recipes.isEmpty() ? new ArrayList<>() : unlocked_recipes;
         }
     }
 
@@ -91,4 +87,6 @@ public class Unlocks {
     public List<String> getUnlocked_recipes() {
         return unlocked_recipes;
     }
+
+
 }

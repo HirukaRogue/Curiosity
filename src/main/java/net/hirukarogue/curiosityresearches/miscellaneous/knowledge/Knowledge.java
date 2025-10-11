@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -11,13 +12,12 @@ public class Knowledge {
     private final String knowledge_name;
     @Nullable
     private final String knowledge_description;
-    @Nullable
     private final Unlocks unlocks;
 
     public Knowledge(String knowledge_name,@Nullable String knowledge_description, @Nullable Unlocks unlocks) {
         this.knowledge_name = knowledge_name;
         this.knowledge_description = knowledge_description;
-        this.unlocks = unlocks;
+        this.unlocks = Objects.requireNonNullElseGet(unlocks, () -> new Unlocks(null, null, null, null, null));
     }
 
     public Knowledge(String knowledge_name, @Nullable String knowledge_description) {
