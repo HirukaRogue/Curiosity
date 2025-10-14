@@ -26,6 +26,10 @@ public class ResearchParchment extends Item {
         this.knowledge = knowledge;
     }
 
+    public @org.jetbrains.annotations.Nullable Knowledge getKnowledge() {
+        return knowledge;
+    }
+
     @Override
     public InteractionResultHolder<ItemStack> use(Level pLevel, Player pPlayer, InteractionHand pUsedHand) {
         pPlayer.getItemInHand(pUsedHand).shrink(1);

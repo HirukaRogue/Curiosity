@@ -2,9 +2,12 @@ package net.hirukarogue.curiosityresearches.recipes;
 
 import com.google.gson.JsonObject;
 import net.hirukarogue.curiosityresearches.CuriosityMod;
+import net.hirukarogue.curiosityresearches.miscellaneous.data.KnowledgeData;
+import net.hirukarogue.curiosityresearches.miscellaneous.knowledge.Knowledge;
 import net.hirukarogue.curiosityresearches.miscellaneous.researchcomponent.Component;
 import net.hirukarogue.curiosityresearches.miscellaneous.researchcomponent.ResearchComponentContainer;
 import net.hirukarogue.curiosityresearches.miscellaneous.data.ResearchJsonCompiler;
+import net.hirukarogue.curiosityresearches.researchparches.researchitems.ResearchParchment;
 import net.minecraft.core.Holder;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;

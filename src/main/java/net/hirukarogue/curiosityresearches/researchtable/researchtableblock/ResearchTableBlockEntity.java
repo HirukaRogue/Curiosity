@@ -1,9 +1,12 @@
 package net.hirukarogue.curiosityresearches.researchtable.researchtableblock;
 
 import net.hirukarogue.curiosityresearches.CuriosityMod;
+import net.hirukarogue.curiosityresearches.miscellaneous.data.KnowledgeData;
+import net.hirukarogue.curiosityresearches.miscellaneous.knowledge.Knowledge;
 import net.hirukarogue.curiosityresearches.miscellaneous.researchcomponent.ResearchComponentContainer;
 import net.hirukarogue.curiosityresearches.recipes.ResearchRecipes;
 import net.hirukarogue.curiosityresearches.researchparches.ResearchItemsRegistry;
+import net.hirukarogue.curiosityresearches.researchparches.researchitems.ResearchParchment;
 import net.hirukarogue.curiosityresearches.researchtable.researchtablemenu.ResearchMenu;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -27,6 +30,7 @@ import net.minecraftforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
 import java.util.Optional;
 
 public class ResearchTableBlockEntity extends BlockEntity implements MenuProvider {
