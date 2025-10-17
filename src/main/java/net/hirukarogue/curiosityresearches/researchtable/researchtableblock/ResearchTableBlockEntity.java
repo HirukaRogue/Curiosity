@@ -39,6 +39,8 @@ public class ResearchTableBlockEntity extends BlockEntity implements MenuProvide
     private static final int INK_AND_QUILL_SLOT = 2;
     private static final int[] RESEARCH_ELEMENTS = {3,4,5,6,7,8,9};
 
+    private Player player;
+
     private final ResearchStackHandler itemHandler = new ResearchStackHandler(10) {
         @Override
         protected void onContentsChanged(int slot) {
@@ -104,6 +106,7 @@ public class ResearchTableBlockEntity extends BlockEntity implements MenuProvide
     @Nullable
     @Override
     public AbstractContainerMenu createMenu(int pContainerId, Inventory inventory, Player player) {
+        this.player = player;
         return new ResearchMenu(pContainerId, inventory, this);
     }
 
@@ -134,6 +137,19 @@ public class ResearchTableBlockEntity extends BlockEntity implements MenuProvide
         }
 
         ItemStack result = recipe.get().getResultItem(null);
+
+        KnowledgeData data = new KnowledgeData(this.level);
+        List<Knowledge> playerKnowledges = data.loadPlayerKnowledge(this.player);
+        List<Knowledge> encyclopedia = data.loadCompleteEncyclopedia();
+        for (Knowledge knowledge : encyclopedia) {
+            if (knowledge.getUnlocks().getUnlocked_knowledge().contains(((ResearchParchment) result.getItem()).getKnowledge())) {
+                if (!playerKnowledges.contains(knowledge)) {
+                    isProcessing = false;
+                    CuriosityMod.LOGGER.debug("player does not have knowledge: " + knowledge.getKnowledge_name());
+                    return;
+                }
+            }
+        }
 
         CuriosityMod.LOGGER.debug("result: " + result);
 

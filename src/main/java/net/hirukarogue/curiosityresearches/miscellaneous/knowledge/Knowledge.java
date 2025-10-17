@@ -1,6 +1,7 @@
 package net.hirukarogue.curiosityresearches.miscellaneous.knowledge;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.Encoder;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import javax.annotation.Nullable;

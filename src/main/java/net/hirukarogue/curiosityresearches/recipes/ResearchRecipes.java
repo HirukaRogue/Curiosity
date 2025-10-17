@@ -167,7 +167,16 @@ public class ResearchRecipes implements Recipe<ResearchComponentContainer> {
 
             CuriosityMod.LOGGER.debug("components_input: " + components_input);
 
-            ItemStack output = new ItemStack(ShapedRecipe.itemFromJson(GsonHelper.getAsJsonObject(pSerializedRecipe, "research_result")));
+            com.mojang.serialization.DataResult<Knowledge> decodedKnowledge = Knowledge.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, pSerializedRecipe.get("knowledge"));
+            Knowledge related = decodedKnowledge.result().orElse(null);
+
+            String customName = GsonHelper.getAsString(pSerializedRecipe, "custom_name", null);
+
+            Item preOutput = ShapedRecipe.itemFromJson(GsonHelper.getAsJsonObject(pSerializedRecipe, "research_result"));
+            ((ResearchParchment) preOutput).setKnowledge(related);
+            ((ResearchParchment) preOutput).setCustomName(customName);
+            ItemStack output = new ItemStack(preOutput);
+            
             ItemStack paperRequired = new ItemStack(Items.PAPER, GsonHelper.getAsInt(pSerializedRecipe, "paper_required"));
 
             return new ResearchRecipes(components_input, paperRequired, output, pRecipeId);
@@ -181,6 +190,7 @@ public class ResearchRecipes implements Recipe<ResearchComponentContainer> {
             inputs.replaceAll(ignored -> new Component(pBuffer.readItem(), pBuffer.readBoolean()));
 
             ItemStack output = pBuffer.readItem();
+
             return new ResearchRecipes(inputs, paper, output, pRecipeId);
         }
 

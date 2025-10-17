@@ -9,25 +9,44 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 
 public class ResearchParchment extends Item {
     @Nullable
-    public final Knowledge knowledge;
+    private Knowledge knowledge = null;
+    private String customName = null;
 
     public ResearchParchment(Properties pProperties) {
         super(pProperties);
-        this.knowledge = null;
-    }
-
-    public ResearchParchment(Properties pProperties, Knowledge knowledge) {
-        super(pProperties);
-        this.knowledge = knowledge;
     }
 
     public @org.jetbrains.annotations.Nullable Knowledge getKnowledge() {
         return knowledge;
+    }
+
+    public void setKnowledge (@org.jetbrains.annotations.Nullable Knowledge knowledge) {
+        this.knowledge = knowledge;
+    }
+
+    public void setCustomName(String name) {
+        this.customName = name;
+    }
+
+    @Override
+    public @NotNull Component getName(@NotNull ItemStack pStack) {
+        return customName != null ? Component.literal(customName) : knowledge != null ? Component.literal(knowledge.getKnowledge_name()) : super.getName(pStack);
+    }
+
+    @Override
+    public void appendHoverText(ItemStack stack, @Nullable Level world, java.util.List<Component> tooltip, net.minecraft.world.item.TooltipFlag flag) {
+        super.appendHoverText(stack, world, tooltip, flag);
+        if (knowledge != null) {
+            if (!knowledge.getKnowledge_description().isEmpty()) {
+                tooltip.add(Component.literal(knowledge.getKnowledge_description()));
+            }
+        }
     }
 
     @Override
