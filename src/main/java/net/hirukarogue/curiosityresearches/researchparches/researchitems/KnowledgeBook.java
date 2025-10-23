@@ -15,7 +15,8 @@ import java.util.List;
 
 public class KnowledgeBook extends Item {
     @Nullable
-    private final List<Knowledge> bookKnowledge;
+    private List<Knowledge> bookKnowledge;
+    private String customName = null;
 
     public KnowledgeBook(Properties pProperties, List<Knowledge> bookKnowledge) {
         super(pProperties);
@@ -24,6 +25,19 @@ public class KnowledgeBook extends Item {
 
     public KnowledgeBook(Properties pProperties) {
         this(pProperties, null);
+    }
+
+    public void setCustomName(@Nullable String name) {
+        this.customName = name;
+    }
+
+    @Override
+    public Component getName(ItemStack pStack) {
+        return customName != null ? Component.literal(customName) : super.getName(pStack);
+    }
+
+    public void setBookKnowledges(@Nullable List<Knowledge> knowledges){
+        this.bookKnowledge = knowledges != null && !knowledges.isEmpty() ? knowledges : null;
     }
 
     @Override

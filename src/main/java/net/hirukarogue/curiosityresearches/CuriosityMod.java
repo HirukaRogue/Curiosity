@@ -7,7 +7,11 @@ import net.hirukarogue.curiosityresearches.researchtable.*;
 import net.hirukarogue.curiosityresearches.researchtable.researchtableblock.ResearchTableEntity;
 import net.hirukarogue.curiosityresearches.researchtable.researchtablemenu.ResearchMenuScreen;
 import net.hirukarogue.curiosityresearches.researchtable.researchtablemenu.ResearchMenuType;
+import net.hirukarogue.curiosityresearches.scripts.ScriptCompiler;
 import net.minecraft.client.gui.screens.MenuScreens;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
@@ -20,6 +24,7 @@ import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.registries.DataPackRegistryEvent;
 import org.slf4j.Logger;
 
 // The value here should match an entry in the META-INF/mods.toml file
