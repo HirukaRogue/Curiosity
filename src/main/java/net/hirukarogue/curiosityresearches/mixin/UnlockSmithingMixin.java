@@ -1,10 +1,14 @@
 package net.hirukarogue.curiosityresearches.mixin;
 
-import net.hirukarogue.curiosityresearches.miscellaneous.data.KnowledgeData;
-import net.hirukarogue.curiosityresearches.miscellaneous.knowledge.Knowledge;
+import net.hirukarogue.curiosityresearches.CuriosityMod;
+import net.hirukarogue.curiosityresearches.miscellaneous.data.KnowledgeHelper;
+import net.hirukarogue.curiosityresearches.records.Knowledge.Knowledge;
+import net.hirukarogue.curiosityresearches.records.Knowledge.Unlocks;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.*;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.SmithingRecipe;
 import net.minecraft.world.level.Level;
@@ -12,12 +16,14 @@ import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Mixin(SmithingMenu.class)
@@ -40,17 +46,55 @@ public abstract class UnlockSmithingMixin extends ItemCombinerMenu {
     private void onInit(CallbackInfo info) {
         Player player = this.player;
 
-        KnowledgeData data = new KnowledgeData(player.level());
-        List<Knowledge> allKnowledge = data.loadCompleteEncyclopedia();
-        List<Knowledge> playerKnowledge = data.loadPlayerKnowledge(player);
+        List<Knowledge> playerKnowledge = KnowledgeHelper.getPlayerKnowledge(player);
 
-        for (int i = 0; i < this.recipes.size(); i++) {
-            for (Knowledge knowledge : allKnowledge) {
-                if (knowledge.getUnlocks() != null && knowledge.getUnlocks().getUnlocked_recipes() != null) {
-                    if (knowledge.getUnlocks().getUnlocked_recipes().contains(this.recipes.get(i))) {
-                        if (!playerKnowledge.contains(knowledge)) {
-                            this.recipes.remove(i);
+        curiosity$canCraft(this.level, playerKnowledge);
+    }
+
+    @Unique
+    private void curiosity$canCraft(Level level, List<Knowledge> playerKnowledge) {
+        for (Unlocks unlocks : level.registryAccess().registryOrThrow(CuriosityMod.UNLOCK_REGISTRY)) {
+            for (ResourceLocation rl : unlocks.unlocks()) {
+                Optional<SmithingRecipe> optRecipe = Objects.requireNonNull(level.getServer())
+                        .getRecipeManager().byKey(rl)
+                        .filter(r -> r instanceof SmithingRecipe)
+                        .map(r -> (SmithingRecipe) r);
+
+                if (optRecipe.isPresent()) {
+                    SmithingRecipe recipe = optRecipe.get();
+                    boolean missingKnowledge = false;
+                    for (net.minecraft.world.item.crafting.Ingredient ingredient : recipe.getIngredients()) {
+                        // Checa se a própria `Ingredient` (por exemplo uma tag) tem um unlock associado.
+                        Unlocks ingredientUnlocks = KnowledgeHelper.getUnlockFromIngredient(level, ingredient);
+                        Knowledge requiredIngredientKnowledge = KnowledgeHelper.getKnowledgeFromUnlock(level, ingredientUnlocks);
+                        if (requiredIngredientKnowledge != null && !playerKnowledge.contains(requiredIngredientKnowledge)) {
+                            missingKnowledge = true;
+                            break;
                         }
+
+                        // Se não bloqueado pela tag, checa os itens expandidos normalmente.
+                        for (ItemStack itemStack : ingredient.getItems()) {
+                            Unlocks relatedUnlocks = KnowledgeHelper.getUnlockFromItem(level, itemStack);
+                            Knowledge required = KnowledgeHelper.getKnowledgeFromUnlock(level, relatedUnlocks);
+                            if (required != null && !playerKnowledge.contains(required)) {
+                                missingKnowledge = true;
+                                break;
+                            }
+                        }
+                        if (missingKnowledge) break;
+                    }
+
+                    if (!missingKnowledge) {
+                        ItemStack result = recipe.getResultItem(level.registryAccess());
+                        Unlocks resultUnlocks = KnowledgeHelper.getUnlockFromItem(level, result);
+                        Knowledge requiredResult = KnowledgeHelper.getKnowledgeFromUnlock(level, resultUnlocks);
+                        if (requiredResult != null && !playerKnowledge.contains(requiredResult)) {
+                            missingKnowledge = true;
+                        }
+                    }
+
+                    if (missingKnowledge) {
+                        this.recipes.remove(recipe);
                     }
                 }
             }

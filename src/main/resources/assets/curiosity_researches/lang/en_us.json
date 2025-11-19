@@ -6,5 +6,15 @@
   "item.curiosity_researches.rare_research": "Rare Research",
   "item.curiosity_researches.epic_research": "Epic Research",
   "item.curiosity_researches.legendary_research": "Legendary Research",
-  "item.curiosity_researches.mythic_research": "Mythic Research"
+  "item.curiosity_researches.mythic_research": "Mythic Research",
+
+  "item.curiosity_researches.research_note": "Research Note",
+  "item.curiosity_researches.incomplete_research": "Incomplete Research",
+
+  "item.curiosity_researches.shared_research_book": "Shared Research Journal",
+
+  "item.curiosity_researches.knowledge_book": "Knowledge Book",
+
+  "item.curiosity_researches.ink_and_quill": "Ink and Quill",
+  "item.curiosity_researches.empty_ink_and_quill": "Empty Ink and Quill"
 }

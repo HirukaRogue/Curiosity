@@ -1,10 +1,11 @@
 package net.hirukarogue.curiosityresearches.researchtable.researchtableblock;
 
 import net.hirukarogue.curiosityresearches.CuriosityMod;
-import net.hirukarogue.curiosityresearches.miscellaneous.data.KnowledgeData;
-import net.hirukarogue.curiosityresearches.miscellaneous.knowledge.Knowledge;
+import net.hirukarogue.curiosityresearches.miscellaneous.data.KnowledgeHelper;
 import net.hirukarogue.curiosityresearches.miscellaneous.researchcomponent.ResearchComponentContainer;
 import net.hirukarogue.curiosityresearches.recipes.ResearchRecipes;
+import net.hirukarogue.curiosityresearches.records.Knowledge.Knowledge;
+import net.hirukarogue.curiosityresearches.records.Knowledge.Unlocks;
 import net.hirukarogue.curiosityresearches.researchparches.ResearchItemsRegistry;
 import net.hirukarogue.curiosityresearches.researchparches.researchitems.ResearchParchment;
 import net.hirukarogue.curiosityresearches.researchtable.researchtablemenu.ResearchMenu;
@@ -14,6 +15,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
@@ -138,14 +140,25 @@ public class ResearchTableBlockEntity extends BlockEntity implements MenuProvide
 
         ItemStack result = recipe.get().getResultItem(null);
 
-        KnowledgeData data = new KnowledgeData(this.level);
-        List<Knowledge> playerKnowledges = data.loadPlayerKnowledge(this.player);
-        List<Knowledge> encyclopedia = data.loadCompleteEncyclopedia();
-        for (Knowledge knowledge : encyclopedia) {
-            if (knowledge.getUnlocks().getUnlocked_knowledge().contains(((ResearchParchment) result.getItem()).getKnowledge())) {
-                if (!playerKnowledges.contains(knowledge)) {
+        List<Knowledge> playerKnowledges = KnowledgeHelper.getPlayerKnowledge(this.player);
+        if (level == null) {
+            isProcessing = false;
+            return;
+        }
+        List<Knowledge> allKnowledge = level.registryAccess().registry(CuriosityMod.KNOWLEDGE_REGISTRY).get().stream().toList();
+        for (Knowledge knowledge : allKnowledge) {
+            Unlocks unlocks = KnowledgeHelper.getKnowledgeUnlock(level, knowledge);
+            if (unlocks == null) {
+                continue;
+            }
+            for (ResourceLocation krl : unlocks.unlocks()) {
+                Knowledge unlock_knowledge = level.registryAccess().registryOrThrow(CuriosityMod.KNOWLEDGE_REGISTRY).get(krl);
+                if (unlock_knowledge == null) {
+                    continue;
+                }
+                if (playerKnowledges.contains(unlock_knowledge)) {
                     isProcessing = false;
-                    CuriosityMod.LOGGER.debug("player does not have knowledge: " + knowledge.getKnowledge_name());
+                    CuriosityMod.LOGGER.debug("player does not have knowledge: " + knowledge.knowledgeName());
                     return;
                 }
             }

@@ -2,12 +2,13 @@ package net.hirukarogue.curiosityresearches;
 
 import com.mojang.logging.LogUtils;
 import net.hirukarogue.curiosityresearches.recipes.ResearchRegistry;
+import net.hirukarogue.curiosityresearches.records.Knowledge.Unlocks;
 import net.hirukarogue.curiosityresearches.researchparches.ResearchItemsRegistry;
 import net.hirukarogue.curiosityresearches.researchtable.*;
 import net.hirukarogue.curiosityresearches.researchtable.researchtableblock.ResearchTableEntity;
 import net.hirukarogue.curiosityresearches.researchtable.researchtablemenu.ResearchMenuScreen;
 import net.hirukarogue.curiosityresearches.researchtable.researchtablemenu.ResearchMenuType;
-import net.hirukarogue.curiosityresearches.scripts.ScriptCompiler;
+import net.hirukarogue.curiosityresearches.records.Knowledge.Knowledge;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
@@ -35,6 +36,12 @@ public class CuriosityMod
     public static final String MOD_ID = "curiosity_researches";
     // Directly reference a slf4j logger
     public static final Logger LOGGER = LogUtils.getLogger();
+
+    public static final ResourceKey<Registry<Knowledge>> KNOWLEDGE_REGISTRY =
+            ResourceKey.createRegistryKey(new ResourceLocation(MOD_ID, "knowledge"));
+
+    public static final ResourceKey<Registry<Unlocks>> UNLOCK_REGISTRY =
+            ResourceKey.createRegistryKey(new ResourceLocation(MOD_ID, "unlocks"));
 
     public CuriosityMod()
     {
@@ -94,6 +101,23 @@ public class CuriosityMod
         public static void onClientSetup(FMLClientSetupEvent event)
         {
             MenuScreens.register(ResearchMenuType.RESEARCH_MENU.get(), ResearchMenuScreen::new);
+        }
+    }
+
+    @Mod.EventBusSubscriber(modid = MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
+    public static class GeneralModEvents {
+        @SubscribeEvent
+        public static void addRegistries(DataPackRegistryEvent.NewRegistry event) {
+            event.dataPackRegistry(
+                    KNOWLEDGE_REGISTRY,
+                    Knowledge.CODEC,
+                    Knowledge.CODEC
+            );
+            event.dataPackRegistry(
+                    UNLOCK_REGISTRY,
+                    Unlocks.CODEC,
+                    Unlocks.CODEC
+            );
         }
     }
 }

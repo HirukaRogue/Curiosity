@@ -1,8 +1,10 @@
 package net.hirukarogue.curiosityresearches.researchparches.researchitems;
 
-import net.hirukarogue.curiosityresearches.miscellaneous.knowledge.Knowledge;
-import net.hirukarogue.curiosityresearches.miscellaneous.data.KnowledgeData;
+import net.hirukarogue.curiosityresearches.CuriosityMod;
+import net.hirukarogue.curiosityresearches.miscellaneous.data.KnowledgeHelper;
+import net.hirukarogue.curiosityresearches.records.Knowledge.Knowledge;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
@@ -42,16 +44,18 @@ public class KnowledgeBook extends Item {
 
     @Override
     public InteractionResultHolder<ItemStack> use(Level pLevel, Player pPlayer, InteractionHand pUsedHand) {
-        pPlayer.getItemInHand(pUsedHand).shrink(1);
         pPlayer.sendSystemMessage(Component.literal("You acquire the following knowledge from this book:"));
-        if (bookKnowledge != null) {
+        if (bookKnowledge != null && !bookKnowledge.isEmpty()) {
             for (Knowledge knowledge : bookKnowledge) {
-                pPlayer.sendSystemMessage(Component.literal("- "+ knowledge.getKnowledge_name()));
-                KnowledgeData data = new KnowledgeData(pLevel);
-                data.addKnowledgeToPlayer(pPlayer, knowledge);
+                if (KnowledgeHelper.playerHasKnowledge(pPlayer, knowledge)) {
+                    pPlayer.sendSystemMessage(Component.literal("- "+ knowledge.knowledgeName() + " " + knowledge.level() + "(You already learned it)"));
+                    continue;
+                }
+                pPlayer.sendSystemMessage(Component.literal("- "+ knowledge.knowledgeName() + " " + knowledge.level()));
+                KnowledgeHelper.playerDiscoverKnowledge(knowledge, pPlayer);
             }
         } else {
-            pPlayer.sendSystemMessage(Component.literal("- None"));
+            pPlayer.sendSystemMessage(Component.literal("- Nothing"));
         }
         return super.use(pLevel, pPlayer, pUsedHand);
     }

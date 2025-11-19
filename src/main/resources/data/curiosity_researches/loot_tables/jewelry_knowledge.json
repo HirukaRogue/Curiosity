@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:chest",
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "curiosity_researches:knowledge_book",
+          "weight": 4,
+          "quality": 4,
+          "conditions": [],
+          "functions": [
+            {
+              "function": "curiosity_researches:set_knowledge",
+              "tags": ["curiosity_researches:jewelry_tag"]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

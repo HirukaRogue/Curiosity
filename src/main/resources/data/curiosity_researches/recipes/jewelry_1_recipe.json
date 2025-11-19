@@ -1,0 +1,29 @@
+{
+  "type": "curiosity_researches:research",
+  "keys": {
+    "g": {
+      "component": "minecraft:gold_nugget",
+      "quantity": 4,
+      "consume": true
+    },
+    "l": {
+      "component": "minecraft:lava_bucket",
+      "quantity": 1,
+      "consume": false
+    },
+    "c": {
+      "component": "minecraft:clay_ball",
+      "quantity": 1,
+      "consume": true
+    }
+  },
+  "pattern": [
+    " l",
+    "gc ",
+    "  "
+  ],
+  "knowledge": "jewelry_1",
+  "tier": "common",
+  "custom_name": "Basic Jewelry",
+  "paper_required": 2
+}

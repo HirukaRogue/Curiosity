@@ -1,7 +1,6 @@
 package net.hirukarogue.curiosityresearches.researchparches;
 
 import net.hirukarogue.curiosityresearches.CuriosityMod;
-import net.hirukarogue.curiosityresearches.miscellaneous.knowledge.Knowledge;
 import net.hirukarogue.curiosityresearches.researchparches.researchitems.InkandQuill;
 import net.hirukarogue.curiosityresearches.researchparches.researchitems.KnowledgeBook;
 import net.hirukarogue.curiosityresearches.researchparches.researchitems.ResearchParchment;
@@ -11,9 +10,6 @@ import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class ResearchItemsRegistry {
     //items setup

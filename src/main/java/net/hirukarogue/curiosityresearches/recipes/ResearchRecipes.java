@@ -1,12 +1,14 @@
 package net.hirukarogue.curiosityresearches.recipes;
 
 import com.google.gson.JsonObject;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.JsonOps;
 import net.hirukarogue.curiosityresearches.CuriosityMod;
-import net.hirukarogue.curiosityresearches.miscellaneous.data.KnowledgeData;
-import net.hirukarogue.curiosityresearches.miscellaneous.knowledge.Knowledge;
 import net.hirukarogue.curiosityresearches.miscellaneous.researchcomponent.Component;
 import net.hirukarogue.curiosityresearches.miscellaneous.researchcomponent.ResearchComponentContainer;
-import net.hirukarogue.curiosityresearches.miscellaneous.data.ResearchJsonCompiler;
+import net.hirukarogue.curiosityresearches.miscellaneous.data.ResearchJsonHelper;
+import net.hirukarogue.curiosityresearches.researchparches.ResearchItemsRegistry;
 import net.hirukarogue.curiosityresearches.researchparches.researchitems.ResearchParchment;
 import net.minecraft.core.Holder;
 import net.minecraft.core.NonNullList;
@@ -21,6 +23,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -30,20 +33,24 @@ import java.util.stream.StreamSupport;
 public class ResearchRecipes implements Recipe<ResearchComponentContainer> {
     private final NonNullList<Component> researchComponents;
     private final ItemStack paperInput;
-    private final ItemStack finishedResearch;
+    private final String customName;
+    private final String knowledge;
+    private final String tier;
 
     private final ResourceLocation id;
 
-    public ResearchRecipes(NonNullList<Component> researchComponents, ItemStack paperInput, ItemStack finishedResearch, ResourceLocation id) {
+    public ResearchRecipes(NonNullList<Component> researchComponents, ItemStack paperInput, @Nullable String customName, String knowledge, String tier, ResourceLocation id) {
         this.researchComponents = researchComponents;
         this.paperInput = paperInput;
-        this.finishedResearch = finishedResearch;
+        this.customName = customName;
+        this.knowledge = knowledge;
+        this.tier = tier;
         this.id = id;
     }
 
 
     @Override
-    public boolean matches(ResearchComponentContainer pContainer, Level pLevel) {
+    public boolean matches(@NotNull ResearchComponentContainer pContainer, Level pLevel) {
         if (pLevel.isClientSide()) {
             return false;
         }
@@ -100,8 +107,8 @@ public class ResearchRecipes implements Recipe<ResearchComponentContainer> {
     }
 
     @Override
-    public ItemStack assemble(ResearchComponentContainer researchContainer, RegistryAccess registryAccess) {
-        return finishedResearch.copy();
+    public @NotNull ItemStack assemble(@NotNull ResearchComponentContainer researchContainer, RegistryAccess registryAccess) {
+        return this.getResultItem(registryAccess);
     }
 
     @Override
@@ -110,8 +117,23 @@ public class ResearchRecipes implements Recipe<ResearchComponentContainer> {
     }
 
     @Override
-    public ItemStack getResultItem(RegistryAccess registryAccess) {
-        return finishedResearch.copy();
+    public @NotNull ItemStack getResultItem(@NotNull RegistryAccess registryAccess) {
+        Item resaerchParchmentItem;
+
+        switch (tier) {
+            case "common" -> resaerchParchmentItem = ResearchItemsRegistry.COMMON_RESEARCH.get();
+            case "uncommon" -> resaerchParchmentItem = ResearchItemsRegistry.UNCOMMON_RESEARCH.get();
+            case "rare" -> resaerchParchmentItem = ResearchItemsRegistry.RARE_RESEARCH.get();
+            case "epic" -> resaerchParchmentItem = ResearchItemsRegistry.EPIC_RESEARCH.get();
+            case "legendary" -> resaerchParchmentItem = ResearchItemsRegistry.LEGENDARY_RESEARCH.get();
+            case "MYTHIC" -> resaerchParchmentItem = ResearchItemsRegistry.MYTHIC_RESEARCH.get();
+            default -> throw new IllegalArgumentException("Invalid tier: " + tier + " tier must be one of common, uncommon, rare, epic, legendary, MYTHIC");
+        }
+
+        ((ResearchParchment) resaerchParchmentItem).setKnowledge(knowledge);
+        ((ResearchParchment) resaerchParchmentItem).setCustomName(customName);
+
+        return new ItemStack(resaerchParchmentItem);
     }
 
     @Override
@@ -146,7 +168,7 @@ public class ResearchRecipes implements Recipe<ResearchComponentContainer> {
         return "ResearchRecipes{" +
                 "researchComponents=" + researchComponents +
                 ", paperInput=" + paperInput +
-                ", finishedResearch=" + finishedResearch +
+                ", tier='" + tier + '\'' +
                 ", id=" + id +
                 '}';
     }
@@ -163,23 +185,19 @@ public class ResearchRecipes implements Recipe<ResearchComponentContainer> {
 
         @Override
         public ResearchRecipes fromJson(ResourceLocation pRecipeId, JsonObject pSerializedRecipe) {
-            NonNullList<Component> components_input = ResearchJsonCompiler.compile(pSerializedRecipe);
+            NonNullList<Component> components_input = ResearchJsonHelper.deserialize(pSerializedRecipe);
 
             CuriosityMod.LOGGER.debug("components_input: " + components_input);
 
-            com.mojang.serialization.DataResult<Knowledge> decodedKnowledge = Knowledge.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, pSerializedRecipe.get("knowledge"));
-            Knowledge related = decodedKnowledge.result().orElse(null);
+            String knowledge = GsonHelper.getAsString(pSerializedRecipe, "knowledge");
+
+            String tier = GsonHelper.getAsString(pSerializedRecipe, "tier");
 
             String customName = GsonHelper.getAsString(pSerializedRecipe, "custom_name", null);
 
-            Item preOutput = ShapedRecipe.itemFromJson(GsonHelper.getAsJsonObject(pSerializedRecipe, "research_result"));
-            ((ResearchParchment) preOutput).setKnowledge(related);
-            ((ResearchParchment) preOutput).setCustomName(customName);
-            ItemStack output = new ItemStack(preOutput);
-            
             ItemStack paperRequired = new ItemStack(Items.PAPER, GsonHelper.getAsInt(pSerializedRecipe, "paper_required"));
 
-            return new ResearchRecipes(components_input, paperRequired, output, pRecipeId);
+            return new ResearchRecipes(components_input, paperRequired, customName, knowledge, tier, pRecipeId);
         }
 
         @Override
@@ -189,9 +207,13 @@ public class ResearchRecipes implements Recipe<ResearchComponentContainer> {
 
             inputs.replaceAll(ignored -> new Component(pBuffer.readItem(), pBuffer.readBoolean()));
 
-            ItemStack output = pBuffer.readItem();
+            String customName = pBuffer.readUtf();
 
-            return new ResearchRecipes(inputs, paper, output, pRecipeId);
+            String tier = pBuffer.readUtf();
+
+            String knowledge = pBuffer.readUtf();
+
+            return new ResearchRecipes(inputs, paper, customName, knowledge, tier, pRecipeId);
         }
 
         @Override
@@ -221,4 +243,3 @@ public class ResearchRecipes implements Recipe<ResearchComponentContainer> {
         }
     }
 }
-
