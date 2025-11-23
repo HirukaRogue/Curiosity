@@ -45,7 +45,7 @@ public class ResearchComponentContainer implements Container, StackedContentsCom
     }
 
     /**
-     * Removes the specified {@link net.minecraft.world.ContainerListener} from receiving further change notices.
+     * Removes the specified {@link ContainerListener} from receiving further change notices.
      */
     public void removeListener(ContainerListener pListener) {
         if (this.listeners != null) {

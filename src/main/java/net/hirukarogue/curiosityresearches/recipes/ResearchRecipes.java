@@ -23,8 +23,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +37,7 @@ public class ResearchRecipes implements Recipe<ResearchComponentContainer> {
 
     private final ResourceLocation id;
 
-    public ResearchRecipes(NonNullList<Component> researchComponents, ItemStack paperInput, @Nullable String customName, String knowledge, String tier, ResourceLocation id) {
+    public ResearchRecipes(NonNullList<Component> researchComponents, ItemStack paperInput, String customName, String knowledge, String tier, ResourceLocation id) {
         this.researchComponents = researchComponents;
         this.paperInput = paperInput;
         this.customName = customName;
@@ -50,7 +48,7 @@ public class ResearchRecipes implements Recipe<ResearchComponentContainer> {
 
 
     @Override
-    public boolean matches(@NotNull ResearchComponentContainer pContainer, Level pLevel) {
+    public boolean matches(ResearchComponentContainer pContainer, Level pLevel) {
         if (pLevel.isClientSide()) {
             return false;
         }
@@ -107,7 +105,7 @@ public class ResearchRecipes implements Recipe<ResearchComponentContainer> {
     }
 
     @Override
-    public @NotNull ItemStack assemble(@NotNull ResearchComponentContainer researchContainer, RegistryAccess registryAccess) {
+    public ItemStack assemble(ResearchComponentContainer researchContainer, RegistryAccess registryAccess) {
         return this.getResultItem(registryAccess);
     }
 
@@ -117,7 +115,7 @@ public class ResearchRecipes implements Recipe<ResearchComponentContainer> {
     }
 
     @Override
-    public @NotNull ItemStack getResultItem(@NotNull RegistryAccess registryAccess) {
+    public ItemStack getResultItem(RegistryAccess registryAccess) {
         Item resaerchParchmentItem;
 
         switch (tier) {
@@ -201,7 +199,7 @@ public class ResearchRecipes implements Recipe<ResearchComponentContainer> {
         }
 
         @Override
-        public @Nullable ResearchRecipes fromNetwork(ResourceLocation pRecipeId, FriendlyByteBuf pBuffer) {
+        public ResearchRecipes fromNetwork(ResourceLocation pRecipeId, FriendlyByteBuf pBuffer) {
             NonNullList<Component> inputs = NonNullList.withSize(pBuffer.readInt(), new Component(ItemStack.EMPTY));
             ItemStack paper = pBuffer.readItem();
 

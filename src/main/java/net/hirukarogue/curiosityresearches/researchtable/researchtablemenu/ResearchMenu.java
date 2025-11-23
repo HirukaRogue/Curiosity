@@ -13,7 +13,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.items.SlotItemHandler;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
 
 public class ResearchMenu extends AbstractContainerMenu {
@@ -37,13 +36,13 @@ public class ResearchMenu extends AbstractContainerMenu {
         this.blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER).ifPresent(iItemHandler -> {
             this.addSlot(new SlotItemHandler(iItemHandler,0,8,86){
                 @Override
-                public boolean mayPlace(@NotNull ItemStack stack) {
+                public boolean mayPlace(ItemStack stack) {
                     return stack.is(Items.PAPER);
                 }
             });
             this.addSlot(new SlotItemHandler(iItemHandler,1,149,88){
                 @Override
-                public boolean mayPlace(@NotNull ItemStack stack) {
+                public boolean mayPlace(ItemStack stack) {
                     return false;
                 }
 
@@ -55,7 +54,7 @@ public class ResearchMenu extends AbstractContainerMenu {
             });
             this.addSlot(new SlotItemHandler(iItemHandler,2,8,68){
                 @Override
-                public boolean mayPlace(@NotNull ItemStack stack) {
+                public boolean mayPlace(ItemStack stack) {
                     return stack.is(ResearchItemsRegistry.INK_AND_QUILL.get()) || stack.is(ResearchItemsRegistry.EMPTY_INK_AND_QUILL.get());
                 }
             });
