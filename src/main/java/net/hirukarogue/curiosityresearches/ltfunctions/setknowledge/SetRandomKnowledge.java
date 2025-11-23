@@ -12,11 +12,9 @@ import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.functions.EnchantRandomlyFunction;
 import net.minecraft.world.level.storage.loot.functions.LootItemConditionalFunction;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,7 +71,7 @@ public class SetRandomKnowledge extends LootItemConditionalFunction {
 
     public static class Serializer extends LootItemConditionalFunction.Serializer<SetRandomKnowledge> {
         @Override
-        public @NotNull SetRandomKnowledge deserialize(JsonObject pObject, @NotNull JsonDeserializationContext pDeserializationContext, LootItemCondition[] pConditions) {
+        public SetRandomKnowledge deserialize(JsonObject pObject, JsonDeserializationContext pDeserializationContext, LootItemCondition[] pConditions) {
             List<TagKey<Knowledge>> tags = new ArrayList<>();
             if (pObject.has("tags")) {
                 JsonArray jsonArray = GsonHelper.getAsJsonArray(pObject, "tags");

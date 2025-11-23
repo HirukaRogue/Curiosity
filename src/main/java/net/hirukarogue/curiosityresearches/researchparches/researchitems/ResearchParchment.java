@@ -12,7 +12,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -27,7 +26,7 @@ public class ResearchParchment extends Item {
         super(pProperties);
     }
 
-    public @org.jetbrains.annotations.Nullable String getKnowledge() {
+    public String getKnowledge() {
         return knowledge;
     }
 
@@ -40,12 +39,12 @@ public class ResearchParchment extends Item {
     }
 
     @Override
-    public @NotNull Component getName(@NotNull ItemStack pStack) {
+    public Component getName(ItemStack pStack) {
         return customName != null ? Component.literal(customName) : super.getName(pStack);
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, @Nullable Level world, java.util.List<Component> tooltip, net.minecraft.world.item.TooltipFlag flag) {
+    public void appendHoverText(ItemStack stack, @Nullable Level world, List<Component> tooltip, net.minecraft.world.item.TooltipFlag flag) {
         super.appendHoverText(stack, world, tooltip, flag);
 
         Knowledge knowledge = null;

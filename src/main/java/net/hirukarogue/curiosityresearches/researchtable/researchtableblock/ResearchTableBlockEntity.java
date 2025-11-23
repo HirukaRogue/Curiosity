@@ -29,8 +29,6 @@ import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Optional;
@@ -71,7 +69,7 @@ public class ResearchTableBlockEntity extends BlockEntity implements MenuProvide
     }
 
     @Override
-    public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap) {
+    public <T> LazyOptional<T> getCapability(Capability<T> cap) {
         if (cap == ForgeCapabilities.ITEM_HANDLER) {
             return lazyItemHander.cast();
         }
@@ -105,7 +103,6 @@ public class ResearchTableBlockEntity extends BlockEntity implements MenuProvide
         return Component.translatable("block.curiosiry.research_table");
     }
 
-    @Nullable
     @Override
     public AbstractContainerMenu createMenu(int pContainerId, Inventory inventory, Player player) {
         this.player = player;
@@ -229,7 +226,6 @@ public class ResearchTableBlockEntity extends BlockEntity implements MenuProvide
         return this.itemHandler.getStackInSlot(PAPER_OUTPUT_SLOT).isEmpty();
     }
 
-    @Nullable
     @Override
     public Packet<ClientGamePacketListener> getUpdatePacket() {
         return ClientboundBlockEntityDataPacket.create(this);

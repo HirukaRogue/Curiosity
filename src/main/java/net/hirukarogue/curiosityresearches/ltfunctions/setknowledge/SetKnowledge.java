@@ -9,71 +9,82 @@ import net.hirukarogue.curiosityresearches.records.Knowledge.Knowledge;
 import net.hirukarogue.curiosityresearches.researchparches.ResearchItemsRegistry;
 import net.hirukarogue.curiosityresearches.researchparches.researchitems.KnowledgeBook;
 import net.minecraft.core.Holder;
+import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.KnowledgeBookItem;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.functions.LootItemConditionalFunction;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.StreamSupport;
 
-public class SetKnowledge extends LootItemConditionalFunction {
+public class SetKnowledge extends LootItemConditionalFunction
+{
     final List<TagKey<Knowledge>> determinedKnowledge;
 
-    protected SetKnowledge(LootItemCondition[] pPredicates, List<TagKey<Knowledge>> determinedKnowledge) {
+    protected SetKnowledge(LootItemCondition[] pPredicates, List<TagKey<Knowledge>> determinedKnowledge)
+    {
         super(pPredicates);
         this.determinedKnowledge = determinedKnowledge;
     }
 
     @Override
-    protected ItemStack run(ItemStack stack, LootContext context) {
+    protected ItemStack run(ItemStack stack, LootContext context)
+    {
         List<Knowledge> encyclopedia = new ArrayList<>();
 
-        for (TagKey<Knowledge> kTag : determinedKnowledge) {
-            Iterable<Holder<Knowledge>> iterableK = context.getLevel().registryAccess().registryOrThrow(CuriosityMod.KNOWLEDGE_REGISTRY).getTagOrEmpty(kTag);
+        Registry<Knowledge> knowledgeRegistry = context.getLevel().registryAccess().registryOrThrow(CuriosityMod.KNOWLEDGE_REGISTRY);
+
+        for (TagKey<Knowledge> kTag : determinedKnowledge)
+        {
+            Iterable<Holder<Knowledge>> iterableK = knowledgeRegistry.getTagOrEmpty(kTag);
             iterableK.forEach(k -> encyclopedia.add(k.value()));
         }
 
         Item knowledgeBook = ResearchItemsRegistry.KNOWLEDGE_BOOK.get();
 
-
         ((KnowledgeBook) knowledgeBook).setBookKnowledges(encyclopedia);
-
         return new ItemStack(knowledgeBook);
     }
 
     @Override
-    public LootItemFunctionType getType() {
+    public LootItemFunctionType getType()
+    {
         return null;
     }
 
-    public static class Serializer extends LootItemConditionalFunction.Serializer<SetKnowledge> {
+    public static class Serializer extends LootItemConditionalFunction.Serializer<SetKnowledge>
+    {
         @Override
-        public @NotNull SetKnowledge deserialize(JsonObject pObject, @NotNull JsonDeserializationContext pDeserializationContext, LootItemCondition[] pConditions) {
+        public SetKnowledge deserialize(JsonObject pObject, JsonDeserializationContext pDeserializationContext, LootItemCondition[] pConditions)
+        {
+
             List<TagKey<Knowledge>> tags = new ArrayList<>();
-            if (pObject.has("tags")) {
+            if (pObject.has("tags"))
+            {
                 JsonArray jsonArray = GsonHelper.getAsJsonArray(pObject, "tags");
 
                 List<String> tagsString = List.of(StreamSupport.stream(jsonArray.spliterator(), false)
                         .map(JsonElement::getAsString)
                         .toArray(String[]::new));
 
-                if (tagsString.isEmpty()) {
+                if (tagsString.isEmpty())
+                {
                     throw new RuntimeException("You have no registered knowledge tags for this loot table");
                 }
 
-                for (String tagString : tagsString) {
-                    TagKey<Knowledge> tag = null;
-                    TagKey.create(CuriosityMod.KNOWLEDGE_REGISTRY, Objects.requireNonNull(ResourceLocation.tryParse(tagString)));
-                    tags.add(tag);
+                for (String tagString : tagsString)
+                {
+                    TagKey<Knowledge> wad = TagKey.create(CuriosityMod.KNOWLEDGE_REGISTRY, ResourceLocation.tryParse(tagString));
+                    tags.add(wad);
                 }
             }
 

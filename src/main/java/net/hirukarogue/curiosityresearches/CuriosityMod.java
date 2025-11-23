@@ -1,6 +1,7 @@
 package net.hirukarogue.curiosityresearches;
 
 import com.mojang.logging.LogUtils;
+import net.hirukarogue.curiosityresearches.ltfunctions.CuriosityLootItemFunctions;
 import net.hirukarogue.curiosityresearches.recipes.ResearchRegistry;
 import net.hirukarogue.curiosityresearches.records.Knowledge.Unlocks;
 import net.hirukarogue.curiosityresearches.researchparches.ResearchItemsRegistry;
@@ -13,6 +14,7 @@ import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
@@ -55,6 +57,9 @@ public class CuriosityMod
         ResearchTableItemRegistry.register(modEventBus);
         ResearchTableEntity.register(modEventBus);
         ResearchMenuType.register(modEventBus);
+
+        //loot item functions
+        CuriosityLootItemFunctions.register(modEventBus);
 
         //Research Items
         ResearchItemsRegistry.register(modEventBus);
