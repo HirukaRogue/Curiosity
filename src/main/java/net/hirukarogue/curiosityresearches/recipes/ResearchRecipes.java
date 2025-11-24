@@ -1,13 +1,11 @@
 package net.hirukarogue.curiosityresearches.recipes;
 
 import com.google.gson.JsonObject;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
-import com.mojang.serialization.JsonOps;
 import net.hirukarogue.curiosityresearches.CuriosityMod;
 import net.hirukarogue.curiosityresearches.miscellaneous.researchcomponent.Component;
 import net.hirukarogue.curiosityresearches.miscellaneous.researchcomponent.ResearchComponentContainer;
 import net.hirukarogue.curiosityresearches.miscellaneous.data.ResearchJsonHelper;
+import net.hirukarogue.curiosityresearches.records.ResearchParchmentData;
 import net.hirukarogue.curiosityresearches.researchparches.ResearchItemsRegistry;
 import net.hirukarogue.curiosityresearches.researchparches.researchitems.ResearchParchment;
 import net.minecraft.core.Holder;
@@ -128,8 +126,9 @@ public class ResearchRecipes implements Recipe<ResearchComponentContainer> {
             default -> throw new IllegalArgumentException("Invalid tier: " + tier + " tier must be one of common, uncommon, rare, epic, legendary, MYTHIC");
         }
 
-        ((ResearchParchment) resaerchParchmentItem).setKnowledge(knowledge);
-        ((ResearchParchment) resaerchParchmentItem).setCustomName(customName);
+        ItemStack researchParchment = new ItemStack(resaerchParchmentItem);
+
+        ((ResearchParchment) researchParchment.getItem()).setRPRecord(researchParchment, new ResearchParchmentData(knowledge, customName, tier));
 
         return new ItemStack(resaerchParchmentItem);
     }

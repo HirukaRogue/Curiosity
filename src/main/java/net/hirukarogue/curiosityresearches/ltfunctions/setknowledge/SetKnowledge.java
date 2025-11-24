@@ -6,6 +6,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.hirukarogue.curiosityresearches.CuriosityMod;
 import net.hirukarogue.curiosityresearches.records.Knowledge.Knowledge;
+import net.hirukarogue.curiosityresearches.records.KnowledgeBookData;
 import net.hirukarogue.curiosityresearches.researchparches.ResearchItemsRegistry;
 import net.hirukarogue.curiosityresearches.researchparches.researchitems.KnowledgeBook;
 import net.minecraft.core.Holder;
@@ -13,9 +14,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.GsonHelper;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.KnowledgeBookItem;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.functions.LootItemConditionalFunction;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
@@ -23,17 +22,18 @@ import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.StreamSupport;
 
 public class SetKnowledge extends LootItemConditionalFunction
 {
     final List<TagKey<Knowledge>> determinedKnowledge;
+    final String customName;
 
-    protected SetKnowledge(LootItemCondition[] pPredicates, List<TagKey<Knowledge>> determinedKnowledge)
+    protected SetKnowledge(LootItemCondition[] pPredicates, List<TagKey<Knowledge>> determinedKnowledge, String customName)
     {
         super(pPredicates);
         this.determinedKnowledge = determinedKnowledge;
+        this.customName = customName;
     }
 
     @Override
@@ -49,10 +49,10 @@ public class SetKnowledge extends LootItemConditionalFunction
             iterableK.forEach(k -> encyclopedia.add(k.value()));
         }
 
-        Item knowledgeBook = ResearchItemsRegistry.KNOWLEDGE_BOOK.get();
+        ItemStack knowledgeBook = new ItemStack(ResearchItemsRegistry.KNOWLEDGE_BOOK.get());
 
-        ((KnowledgeBook) knowledgeBook).setBookKnowledges(encyclopedia);
-        return new ItemStack(knowledgeBook);
+        ((KnowledgeBook) knowledgeBook.getItem()).setKnowledgeBookRecord(knowledgeBook, new KnowledgeBookData(encyclopedia, this.customName));
+        return knowledgeBook;
     }
 
     @Override
@@ -88,7 +88,13 @@ public class SetKnowledge extends LootItemConditionalFunction
                 }
             }
 
-            return new SetKnowledge(pConditions, tags);
+            String customName = null;
+
+            if (pObject.has("custom_name")) {
+                customName = GsonHelper.getAsString(pObject, "custom_name");
+            }
+
+            return new SetKnowledge(pConditions, tags, customName);
         }
     }
 }

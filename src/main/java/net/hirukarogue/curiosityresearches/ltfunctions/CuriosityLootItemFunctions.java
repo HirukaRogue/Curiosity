@@ -5,7 +5,6 @@ import net.hirukarogue.curiosityresearches.ltfunctions.setknowledge.SetKnowledge
 import net.hirukarogue.curiosityresearches.ltfunctions.setknowledge.SetRandomKnowledge;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.storage.loot.Serializer;
-import net.minecraft.world.level.storage.loot.functions.LootItemConditionalFunction;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunctions;

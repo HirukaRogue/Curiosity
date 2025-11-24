@@ -1,10 +1,12 @@
 package net.hirukarogue.curiosityresearches.researchparches.researchitems;
 
+import com.mojang.serialization.DataResult;
 import net.hirukarogue.curiosityresearches.CuriosityMod;
 import net.hirukarogue.curiosityresearches.miscellaneous.data.KnowledgeHelper;
 import net.hirukarogue.curiosityresearches.records.Knowledge.Knowledge;
+import net.hirukarogue.curiosityresearches.records.KnowledgeBookData;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
@@ -14,37 +16,58 @@ import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Objects;
 
 public class KnowledgeBook extends Item {
-    @Nullable
-    private List<Knowledge> bookKnowledge;
-    private String customName = null;
-
-    public KnowledgeBook(Properties pProperties, List<Knowledge> bookKnowledge) {
-        super(pProperties);
-        this.bookKnowledge = bookKnowledge;
-    }
-
     public KnowledgeBook(Properties pProperties) {
-        this(pProperties, null);
-    }
-
-    public void setCustomName(@Nullable String name) {
-        this.customName = name;
+        super(pProperties);
     }
 
     @Override
     public Component getName(ItemStack pStack) {
+        KnowledgeBookData data = getKnowledgeBookRecord(pStack);
+        if (data == null) {
+            return super.getName(pStack);
+        }
+        String customName = data.customName();
         return customName != null ? Component.literal(customName) : super.getName(pStack);
     }
 
-    public void setBookKnowledges(@Nullable List<Knowledge> knowledges){
-        this.bookKnowledge = knowledges != null && !knowledges.isEmpty() ? knowledges : null;
+    @Override
+    public void appendHoverText(ItemStack stack, @Nullable Level world, List<Component> tooltip, net.minecraft.world.item.TooltipFlag flag) {
+        StringBuilder knowledges = new StringBuilder();
+        KnowledgeBookData data = getKnowledgeBookRecord(stack);
+        if (data == null) {
+            tooltip.add(Component.literal("This book is empty."));
+            return;
+        }
+        List<Knowledge> bookKnowledge = data.knowledges();
+        if (bookKnowledge != null && !bookKnowledge.isEmpty()) {
+            for (int i = 0; i < bookKnowledge.size(); i++) {
+                if (i >= 5) {
+                    knowledges.append("and ").append(bookKnowledge.size() - 3).append(" more knowledges").append("\n");
+                    break;
+                }
+                Knowledge knowledge = bookKnowledge.get(i);
+                knowledges.append("- ").append(knowledge.knowledgeName()).append(" ").append(knowledge.level()).append("\n");
+            }
+            // Remove last newline
+            knowledges.setLength(knowledges.length() - 1);
+            tooltip.add(Component.literal(knowledges.toString()));
+        } else {
+            tooltip.add(Component.literal("This book is empty."));
+        }
     }
 
     @Override
     public InteractionResultHolder<ItemStack> use(Level pLevel, Player pPlayer, InteractionHand pUsedHand) {
         pPlayer.sendSystemMessage(Component.literal("You acquire the following knowledge from this book:"));
+        KnowledgeBookData data = getKnowledgeBookRecord(pPlayer.getItemInHand(pUsedHand));
+        if (data == null) {
+            pPlayer.sendSystemMessage(Component.literal("- Nothing"));
+            return super.use(pLevel, pPlayer, pUsedHand);
+        }
+        List<Knowledge> bookKnowledge = data.knowledges();
         if (bookKnowledge != null && !bookKnowledge.isEmpty()) {
             for (Knowledge knowledge : bookKnowledge) {
                 if (KnowledgeHelper.playerHasKnowledge(pPlayer, knowledge)) {
@@ -58,5 +81,25 @@ public class KnowledgeBook extends Item {
             pPlayer.sendSystemMessage(Component.literal("- Nothing"));
         }
         return super.use(pLevel, pPlayer, pUsedHand);
+    }
+
+    public static KnowledgeBookData getKnowledgeBookRecord(ItemStack itemStack) {
+        if (itemStack.hasTag()) {
+            if (itemStack.getTag().contains("KnowledgeBookRecord")) {
+                CompoundTag kbTag = itemStack.getTag().getCompound("KnowledgeBookRecord");
+                DataResult<KnowledgeBookData> decode = KnowledgeBookData.CODEC.parse(net.minecraft.nbt.NbtOps.INSTANCE, kbTag);
+                return decode.result().orElse(null);
+            }
+        }
+
+        return null;
+    }
+
+    public static void setKnowledgeBookRecord(ItemStack itemStack, KnowledgeBookData knowledgeBookRecord) {
+        KnowledgeBookData.CODEC.encodeStart(net.minecraft.nbt.NbtOps.INSTANCE, knowledgeBookRecord).resultOrPartial(CuriosityMod.LOGGER::warn).ifPresent(tag -> {
+            CompoundTag itemTag = itemStack.getOrCreateTag();
+            itemTag.put("KnowledgeBookRecord", tag);
+            itemStack.setTag(itemTag);
+        });
     }
 }

@@ -3,13 +3,13 @@ package net.hirukarogue.curiosityresearches.ltfunctions.setknowledge;
 import com.google.gson.*;
 import net.hirukarogue.curiosityresearches.CuriosityMod;
 import net.hirukarogue.curiosityresearches.records.Knowledge.Knowledge;
+import net.hirukarogue.curiosityresearches.records.KnowledgeBookData;
 import net.hirukarogue.curiosityresearches.researchparches.ResearchItemsRegistry;
 import net.hirukarogue.curiosityresearches.researchparches.researchitems.KnowledgeBook;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.GsonHelper;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.functions.LootItemConditionalFunction;
@@ -23,12 +23,14 @@ import java.util.stream.StreamSupport;
 
 public class SetRandomKnowledge extends LootItemConditionalFunction {
     final List<TagKey<Knowledge>> determinedKnowledge;
+    final String customName;
     final int max_amout;
     final int min_amout;
 
-    protected SetRandomKnowledge(LootItemCondition[] pPredicates, List<TagKey<Knowledge>> determinedKnowledge, int max_amout, int min_amout) {
+    protected SetRandomKnowledge(LootItemCondition[] pPredicates, List<TagKey<Knowledge>> determinedKnowledge, int max_amout, int min_amout, String customName) {
         super(pPredicates);
         this.determinedKnowledge = determinedKnowledge;
+        this.customName = customName;
         this.max_amout = max_amout;
         this.min_amout = min_amout;
     }
@@ -44,8 +46,6 @@ public class SetRandomKnowledge extends LootItemConditionalFunction {
 
         int knowledges_amout = context.getRandom().nextIntBetweenInclusive(min_amout, max_amout);
 
-        Item knowledgeBook = ResearchItemsRegistry.KNOWLEDGE_BOOK.get();
-
         List<Knowledge> selected = new ArrayList<>();
 
         for (int i = 0; i < knowledges_amout; i++) {
@@ -59,9 +59,11 @@ public class SetRandomKnowledge extends LootItemConditionalFunction {
             selected.add(knowledge);
         }
 
-        ((KnowledgeBook) knowledgeBook).setBookKnowledges(selected);
+        ItemStack knowledgeBook = new ItemStack(ResearchItemsRegistry.KNOWLEDGE_BOOK.get());
 
-        return new ItemStack(knowledgeBook);
+        ((KnowledgeBook) knowledgeBook.getItem()).setKnowledgeBookRecord(knowledgeBook, new KnowledgeBookData(selected, this.customName));
+
+        return knowledgeBook;
     }
 
     @Override
@@ -112,7 +114,13 @@ public class SetRandomKnowledge extends LootItemConditionalFunction {
                 min = 0;
             }
 
-            return new SetRandomKnowledge(pConditions, tags, max, min);
+            String customName = null;
+
+            if (pObject.has("custom_name")) {
+                customName = GsonHelper.getAsString(pObject, "custom_name");
+            }
+
+            return new SetRandomKnowledge(pConditions, tags, max, min, customName);
         }
     }
 }

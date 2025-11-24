@@ -14,7 +14,6 @@ import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
@@ -58,14 +57,14 @@ public class CuriosityMod
         ResearchTableEntity.register(modEventBus);
         ResearchMenuType.register(modEventBus);
 
-        //loot item functions
-        CuriosityLootItemFunctions.register(modEventBus);
-
         //Research Items
         ResearchItemsRegistry.register(modEventBus);
 
         //Research Recipes
         ResearchRegistry.register(modEventBus);
+
+        //Loot Item Functions
+        CuriosityLootItemFunctions.register(modEventBus);
 
         // Register the commonSetup method for modloading
         modEventBus.addListener(this::commonSetup);

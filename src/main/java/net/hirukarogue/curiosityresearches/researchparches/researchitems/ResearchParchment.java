@@ -1,9 +1,13 @@
 package net.hirukarogue.curiosityresearches.researchparches.researchitems;
 
+import com.mojang.serialization.DataResult;
 import net.hirukarogue.curiosityresearches.CuriosityMod;
 import net.hirukarogue.curiosityresearches.miscellaneous.data.KnowledgeHelper;
 import net.hirukarogue.curiosityresearches.records.Knowledge.Knowledge;
 import net.hirukarogue.curiosityresearches.records.Knowledge.Unlocks;
+import net.hirukarogue.curiosityresearches.records.ResearchParchmentData;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
@@ -18,29 +22,17 @@ import java.util.List;
 import java.util.Objects;
 
 public class ResearchParchment extends Item {
-    @Nullable
-    private String knowledge = null;
-    private String customName = null;
-
     public ResearchParchment(Properties pProperties) {
         super(pProperties);
     }
-
-    public String getKnowledge() {
-        return knowledge;
-    }
-
-    public void setKnowledge (@Nullable String knowledge) {
-        this.knowledge = knowledge;
-    }
-
-    public void setCustomName(String name) {
-        this.customName = name;
-    }
-
     @Override
     public Component getName(ItemStack pStack) {
-        return customName != null ? Component.literal(customName) : super.getName(pStack);
+        ResearchParchmentData rpRecord = getRPRecord(pStack);
+        if (rpRecord == null) {
+            return super.getName(pStack);
+        }
+
+        return rpRecord.customName() != null ? Component.literal(rpRecord.customName()) : super.getName(pStack);
     }
 
     @Override
@@ -48,12 +40,18 @@ public class ResearchParchment extends Item {
         super.appendHoverText(stack, world, tooltip, flag);
 
         Knowledge knowledge = null;
+        ResearchParchmentData rpRecord = getRPRecord(stack);
+        if (rpRecord == null) {
+            return;
+        }
 
-        if (this.knowledge != null) {
+        String knowledgeKey = rpRecord.knowledgeKey();
+
+        if (knowledgeKey != null) {
             try {
                 List<Knowledge> kList = world.registryAccess().registry(CuriosityMod.KNOWLEDGE_REGISTRY).get().stream().toList();
                 for (Knowledge k : kList) {
-                    if (k.key().equals(this.knowledge)){
+                    if (k.key().equals(knowledgeKey)){
                         knowledge = k;
                         break;
                     }
@@ -72,15 +70,23 @@ public class ResearchParchment extends Item {
 
     @Override
     public InteractionResultHolder<ItemStack> use(Level pLevel, Player pPlayer, InteractionHand pUsedHand) {
-        if (knowledge != null) {
+        ResearchParchmentData rpRecord = getRPRecord(pPlayer.getItemInHand(pUsedHand));
+        if (rpRecord != null) {
             Knowledge knowledge = null;
             try {
                 List<Knowledge> knowledgeList = pLevel.registryAccess().registry(CuriosityMod.KNOWLEDGE_REGISTRY).get().stream().toList();
+                String kKey = rpRecord.knowledgeKey() != null ? rpRecord.knowledgeKey() : null;
                 for (Knowledge k : knowledgeList) {
-                    if (k.key().equals(this.knowledge)) {
+                    if (k.key().equals(kKey)) {
                         knowledge = k;
                         break;
                     }
+                }
+
+                if (knowledge == null) {
+                    pPlayer.sendSystemMessage(Component.literal("You learned Nothing!"));
+                    pPlayer.getItemInHand(pUsedHand).shrink(1);
+                    return super.use(pLevel, pPlayer, pUsedHand);
                 }
 
                 for (Knowledge k : knowledgeList) {
@@ -95,12 +101,6 @@ public class ResearchParchment extends Item {
                             return super.use(pLevel, pPlayer, pUsedHand);
                         }
                     }
-                }
-
-                if (knowledge == null) {
-                    pPlayer.sendSystemMessage(Component.literal("You learned Nothing!"));
-                    pPlayer.getItemInHand(pUsedHand).shrink(1);
-                    return super.use(pLevel, pPlayer, pUsedHand);
                 }
 
                 if (knowledge.level() > 1) {
@@ -130,5 +130,23 @@ public class ResearchParchment extends Item {
             pPlayer.sendSystemMessage(Component.literal("You learned Nothing!"));
         }
         return super.use(pLevel, pPlayer, pUsedHand);
+    }
+
+    public static ResearchParchmentData getRPRecord(ItemStack itemStack) {
+        CompoundTag itemTag = itemStack.getTag();
+        if (itemTag != null && itemTag.contains("research_parchment_record")) {
+            CompoundTag rpTag = itemTag.getCompound("research_parchment_record");
+            DataResult<ResearchParchmentData> result = ResearchParchmentData.CODEC.decode(NbtOps.INSTANCE, rpTag).map(pair -> pair.getFirst());
+            return result.resultOrPartial(CuriosityMod.LOGGER::warn).orElse(null);
+        }
+        return null;
+    }
+
+    public static void setRPRecord(ItemStack itemStack, ResearchParchmentData rpRecord) {
+        ResearchParchmentData.CODEC.encodeStart(NbtOps.INSTANCE, rpRecord).resultOrPartial(CuriosityMod.LOGGER::warn).ifPresent(tag -> {
+            CompoundTag itemTag = itemStack.getOrCreateTag();
+            itemTag.put("research_parchment_record", tag);
+            itemStack.setTag(itemTag);
+        });
     }
 }
