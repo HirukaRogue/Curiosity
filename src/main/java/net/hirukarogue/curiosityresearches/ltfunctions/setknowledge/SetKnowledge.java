@@ -51,7 +51,7 @@ public class SetKnowledge extends LootItemConditionalFunction
 
         ItemStack knowledgeBook = new ItemStack(ResearchItemsRegistry.KNOWLEDGE_BOOK.get());
 
-        ((KnowledgeBook) knowledgeBook.getItem()).setKnowledgeBookRecord(knowledgeBook, new KnowledgeBookData(encyclopedia, this.customName));
+        KnowledgeBook.setKnowledgeBookRecord(knowledgeBook, new KnowledgeBookData(encyclopedia, this.customName));
         return knowledgeBook;
     }
 

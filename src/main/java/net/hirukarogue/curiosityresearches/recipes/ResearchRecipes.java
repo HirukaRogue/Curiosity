@@ -128,9 +128,9 @@ public class ResearchRecipes implements Recipe<ResearchComponentContainer> {
 
         ItemStack researchParchment = new ItemStack(resaerchParchmentItem);
 
-        ((ResearchParchment) researchParchment.getItem()).setRPRecord(researchParchment, new ResearchParchmentData(knowledge, customName, tier));
+        ResearchParchment.setRPRecord(researchParchment, new ResearchParchmentData(knowledge, customName, tier));
 
-        return new ItemStack(resaerchParchmentItem);
+        return researchParchment;
     }
 
     @Override

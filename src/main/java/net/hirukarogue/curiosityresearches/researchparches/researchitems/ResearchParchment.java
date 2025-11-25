@@ -146,7 +146,6 @@ public class ResearchParchment extends Item {
         ResearchParchmentData.CODEC.encodeStart(NbtOps.INSTANCE, rpRecord).resultOrPartial(CuriosityMod.LOGGER::warn).ifPresent(tag -> {
             CompoundTag itemTag = itemStack.getOrCreateTag();
             itemTag.put("research_parchment_record", tag);
-            itemStack.setTag(itemTag);
         });
     }
 }
