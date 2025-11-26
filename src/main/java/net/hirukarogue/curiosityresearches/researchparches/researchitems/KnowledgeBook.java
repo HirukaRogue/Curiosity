@@ -61,14 +61,14 @@ public class KnowledgeBook extends Item {
 
     @Override
     public InteractionResultHolder<ItemStack> use(Level pLevel, Player pPlayer, InteractionHand pUsedHand) {
-        pPlayer.sendSystemMessage(Component.literal("You acquire the following knowledge from this book:"));
         KnowledgeBookData data = getKnowledgeBookRecord(pPlayer.getItemInHand(pUsedHand));
         if (data == null) {
-            pPlayer.sendSystemMessage(Component.literal("- Nothing"));
+            pPlayer.sendSystemMessage(Component.literal("This is a blank book. There is no knowledge to acquire."));
             return super.use(pLevel, pPlayer, pUsedHand);
         }
         List<Knowledge> bookKnowledge = data.knowledges();
         if (bookKnowledge != null && !bookKnowledge.isEmpty()) {
+            pPlayer.sendSystemMessage(Component.literal("You acquire the following knowledge from this book:"));
             for (Knowledge knowledge : bookKnowledge) {
                 if (KnowledgeHelper.playerHasKnowledge(pPlayer, knowledge)) {
                     pPlayer.sendSystemMessage(Component.literal("- "+ knowledge.knowledgeName() + " " + knowledge.level() + "(You already learned it)"));
@@ -78,7 +78,7 @@ public class KnowledgeBook extends Item {
                 KnowledgeHelper.playerDiscoverKnowledge(knowledge, pPlayer);
             }
         } else {
-            pPlayer.sendSystemMessage(Component.literal("- Nothing"));
+            pPlayer.sendSystemMessage(Component.literal("This is a blank book. There is no knowledge to acquire."));
         }
         return super.use(pLevel, pPlayer, pUsedHand);
     }
@@ -95,11 +95,10 @@ public class KnowledgeBook extends Item {
         return null;
     }
 
-    public static void setKnowledgeBookRecord(ItemStack itemStack, KnowledgeBookData knowledgeBookRecord) {
-        KnowledgeBookData.CODEC.encodeStart(net.minecraft.nbt.NbtOps.INSTANCE, knowledgeBookRecord).resultOrPartial(CuriosityMod.LOGGER::warn).ifPresent(tag -> {
+    public static void setKnowledgeBookRecord(ItemStack itemStack, KnowledgeBookData knowledgeBookData) {
+        KnowledgeBookData.CODEC.encodeStart(net.minecraft.nbt.NbtOps.INSTANCE, knowledgeBookData).resultOrPartial(msg -> CuriosityMod.LOGGER.warn("Failed loading knowledge book encode: " + msg)).ifPresent(tag -> {
             CompoundTag itemTag = itemStack.getOrCreateTag();
             itemTag.put("KnowledgeBookRecord", tag);
-            itemStack.setTag(itemTag);
         });
     }
 }

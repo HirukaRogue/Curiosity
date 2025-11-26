@@ -23,6 +23,14 @@ public class SharedKnowledgeBook extends Item {
     }
 
     @Override
+    public void onCraftedBy(ItemStack pStack, Level pLevel, Player pPlayer) {
+        List<Knowledge> playerKnowledge = KnowledgeHelper.getPlayerKnowledge(pPlayer);
+        String sharedBy = pPlayer.getDisplayName().getString();
+        setSharedKnowledge(pStack, new SharedKnowledgeBookData(playerKnowledge, sharedBy));
+        super.onCraftedBy(pStack, pLevel, pPlayer);
+    }
+
+    @Override
     public void appendHoverText(ItemStack stack, @Nullable Level world, List<Component> tooltip, net.minecraft.world.item.TooltipFlag flag) {
         StringBuilder knowledges = new StringBuilder();
         SharedKnowledgeBookData record = getSharedKnowledgeRecord(stack);
@@ -52,15 +60,15 @@ public class SharedKnowledgeBook extends Item {
 
     @Override
     public InteractionResultHolder<ItemStack> use(Level pLevel, Player pPlayer, InteractionHand pUsedHand) {
-        pPlayer.getItemInHand(pUsedHand).shrink(1);
         SharedKnowledgeBookData record = getSharedKnowledgeRecord(pPlayer.getItemInHand(pUsedHand));
+        pPlayer.getItemInHand(pUsedHand).shrink(1);
         if (record == null) {
             pPlayer.sendSystemMessage(Component.literal("This is a blank book. There is no knowledge to acquire."));
             return super.use(pLevel, pPlayer, pUsedHand);
         }
         List<Knowledge> playerKnownKnowledge = record.knowledges();
         String owner = record.sharedBy();
-        pPlayer.sendSystemMessage(Component.literal("You acquire the following knowledge from " + (owner != null ? owner : "an unknown source") + ":"));
+        pPlayer.sendSystemMessage(Component.literal("You acquire the following knowledge from " + (owner != null && owner.equals(pPlayer.getDisplayName().getString()) ? "Yourself" : owner != null ? owner : "an unknown source") + ":"));
         if (playerKnownKnowledge != null && !playerKnownKnowledge.isEmpty()) {
             for (Knowledge knowledge : playerKnownKnowledge) {
                 if (KnowledgeHelper.playerHasKnowledge(pPlayer, knowledge)) {

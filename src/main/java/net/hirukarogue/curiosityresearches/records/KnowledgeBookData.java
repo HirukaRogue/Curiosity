@@ -12,6 +12,9 @@ public record KnowledgeBookData(
 ) {
     public static final Codec<KnowledgeBookData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Knowledge.CODEC.listOf().fieldOf("knowledges").forGetter(KnowledgeBookData::knowledges),
-            Codec.STRING.fieldOf("custom_name").forGetter(KnowledgeBookData::customName)
-    ).apply(instance, KnowledgeBookData::new));
+            Codec.STRING.optionalFieldOf("custom_name").forGetter(cn -> cn.customName != null ? cn.customName.describeConstable() : java.util.Optional.empty())
+    ).apply(instance, (knowledges, customName) -> new KnowledgeBookData(
+            knowledges,
+            customName.orElse(null)
+    )));
 }

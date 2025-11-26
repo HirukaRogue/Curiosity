@@ -36,6 +36,13 @@ public class ResearchCraft extends RecipeProvider {
                 .unlockedBy(getHasName(Items.INK_SAC), has(Items.INK_SAC))
                 .save(pWriter, new ResourceLocation("curiosity_researches","ink_and_quill_from_scratch"));
 
+        ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, ResearchItemsRegistry.SHARED_RESEARCH_BOOK.get(), 1)
+                .requires(Items.WRITABLE_BOOK)
+                .requires(Items.DIAMOND)
+                .unlockedBy(getHasName(Items.WRITABLE_BOOK), has(Items.WRITABLE_BOOK))
+                .unlockedBy(getHasName(Items.DIAMOND), has(Items.DIAMOND))
+                .save(pWriter, new ResourceLocation("curiosity_researches","shared_research_book"));
+
         ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, ResearchItemsRegistry.INK_AND_QUILL.get(), 1)
                 .requires(Items.BLACK_DYE)
                 .requires(ResearchItemsRegistry.EMPTY_INK_AND_QUILL.get())

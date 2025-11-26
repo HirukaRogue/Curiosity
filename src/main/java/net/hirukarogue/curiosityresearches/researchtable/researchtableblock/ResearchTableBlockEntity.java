@@ -164,7 +164,7 @@ public class ResearchTableBlockEntity extends BlockEntity implements MenuProvide
         CuriosityMod.LOGGER.debug("result: " + result);
 
         if (hasRecipe() && canInsertItemIntoOutputSlot()) {
-            this.itemHandler.setStackInSlot(PAPER_OUTPUT_SLOT, new ItemStack(result.getItem(), 1));
+            this.itemHandler.setStackInSlot(PAPER_OUTPUT_SLOT, result);
         }
         isProcessing = false;
     }
