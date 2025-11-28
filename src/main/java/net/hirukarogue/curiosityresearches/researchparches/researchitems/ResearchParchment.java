@@ -27,7 +27,7 @@ public class ResearchParchment extends Item {
     }
     @Override
     public Component getName(ItemStack pStack) {
-        ResearchParchmentData rpRecord = getRPRecord(pStack);
+        ResearchParchmentData rpRecord = ResearchParchmentData.load(pStack);
         if (rpRecord == null) {
             return super.getName(pStack);
         }
@@ -40,7 +40,7 @@ public class ResearchParchment extends Item {
         super.appendHoverText(stack, world, tooltip, flag);
 
         Knowledge knowledge = null;
-        ResearchParchmentData rpRecord = getRPRecord(stack);
+        ResearchParchmentData rpRecord = ResearchParchmentData.load(stack);
         if (rpRecord == null) {
             return;
         }
@@ -70,7 +70,7 @@ public class ResearchParchment extends Item {
 
     @Override
     public InteractionResultHolder<ItemStack> use(Level pLevel, Player pPlayer, InteractionHand pUsedHand) {
-        ResearchParchmentData rpRecord = getRPRecord(pPlayer.getItemInHand(pUsedHand));
+        ResearchParchmentData rpRecord = ResearchParchmentData.load(pPlayer.getItemInHand(pUsedHand));
         if (rpRecord != null) {
             Knowledge knowledge = null;
             try {
@@ -130,22 +130,5 @@ public class ResearchParchment extends Item {
             pPlayer.sendSystemMessage(Component.literal("You learned Nothing!"));
         }
         return super.use(pLevel, pPlayer, pUsedHand);
-    }
-
-    public static ResearchParchmentData getRPRecord(ItemStack itemStack) {
-        CompoundTag itemTag = itemStack.getTag();
-        if (itemTag != null && itemTag.contains("research_parchment_record")) {
-            CompoundTag rpTag = itemTag.getCompound("research_parchment_record");
-            DataResult<ResearchParchmentData> result = ResearchParchmentData.CODEC.decode(NbtOps.INSTANCE, rpTag).map(pair -> pair.getFirst());
-            return result.resultOrPartial(CuriosityMod.LOGGER::warn).orElse(null);
-        }
-        return null;
-    }
-
-    public static void setRPRecord(ItemStack itemStack, ResearchParchmentData rpRecord) {
-        ResearchParchmentData.CODEC.encodeStart(NbtOps.INSTANCE, rpRecord).resultOrPartial(CuriosityMod.LOGGER::warn).ifPresent(tag -> {
-            CompoundTag itemTag = itemStack.getOrCreateTag();
-            itemTag.put("research_parchment_record", tag);
-        });
     }
 }

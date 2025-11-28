@@ -1,4 +1,6 @@
 {
+  "curiosity_researches.creative_tab": "Curiosity Researches Tab",
+
   "block.curiosity_researches.research_table": "Research Table",
 
   "item.curiosity_researches.common_research": "Common Research",
@@ -8,7 +10,7 @@
   "item.curiosity_researches.legendary_research": "Legendary Research",
   "item.curiosity_researches.mythic_research": "Mythic Research",
 
-  "item.curiosity_researches.research_note": "Research Note",
+  "item.curiosity_researches.research_notes": "Research Note",
   "item.curiosity_researches.incomplete_research": "Incomplete Research",
 
   "item.curiosity_researches.shared_research_book": "Shared Research Journal",

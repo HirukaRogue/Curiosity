@@ -26,14 +26,14 @@ public class SharedKnowledgeBook extends Item {
     public void onCraftedBy(ItemStack pStack, Level pLevel, Player pPlayer) {
         List<Knowledge> playerKnowledge = KnowledgeHelper.getPlayerKnowledge(pPlayer);
         String sharedBy = pPlayer.getDisplayName().getString();
-        setSharedKnowledge(pStack, new SharedKnowledgeBookData(playerKnowledge, sharedBy));
+        SharedKnowledgeBookData.save(pStack, new SharedKnowledgeBookData(playerKnowledge, sharedBy));
         super.onCraftedBy(pStack, pLevel, pPlayer);
     }
 
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level world, List<Component> tooltip, net.minecraft.world.item.TooltipFlag flag) {
         StringBuilder knowledges = new StringBuilder();
-        SharedKnowledgeBookData record = getSharedKnowledgeRecord(stack);
+        SharedKnowledgeBookData record = SharedKnowledgeBookData.load(stack);
         if (record == null) {
             tooltip.add(Component.literal("This book is empty."));
             return;
@@ -60,7 +60,7 @@ public class SharedKnowledgeBook extends Item {
 
     @Override
     public InteractionResultHolder<ItemStack> use(Level pLevel, Player pPlayer, InteractionHand pUsedHand) {
-        SharedKnowledgeBookData record = getSharedKnowledgeRecord(pPlayer.getItemInHand(pUsedHand));
+        SharedKnowledgeBookData record = SharedKnowledgeBookData.load(pPlayer.getItemInHand(pUsedHand));
         pPlayer.getItemInHand(pUsedHand).shrink(1);
         if (record == null) {
             pPlayer.sendSystemMessage(Component.literal("This is a blank book. There is no knowledge to acquire."));
@@ -82,25 +82,5 @@ public class SharedKnowledgeBook extends Item {
             pPlayer.sendSystemMessage(Component.literal("- None"));
         }
         return super.use(pLevel, pPlayer, pUsedHand);
-    }
-
-    public static SharedKnowledgeBookData getSharedKnowledgeRecord(ItemStack itemStack) {
-        if (itemStack.hasTag()) {
-            if (itemStack.getTag().contains("shared_knowledge")) {
-                CompoundTag kbTag = itemStack.getTag().getCompound("shared_knowledge");
-                DataResult<SharedKnowledgeBookData> decode = SharedKnowledgeBookData.CODEC.parse(net.minecraft.nbt.NbtOps.INSTANCE, kbTag);
-                return decode.result().orElse(null);
-            }
-        }
-
-        return null;
-    }
-
-    public static void setSharedKnowledge(ItemStack itemStack, SharedKnowledgeBookData sharedknowledgeRecord) {
-        SharedKnowledgeBookData.CODEC.encodeStart(net.minecraft.nbt.NbtOps.INSTANCE, sharedknowledgeRecord).resultOrPartial(CuriosityMod.LOGGER::warn).ifPresent(tag -> {
-            CompoundTag itemTag = itemStack.getOrCreateTag();
-            itemTag.put("shared_knowledge", tag);
-            itemStack.setTag(itemTag);
-        });
     }
 }

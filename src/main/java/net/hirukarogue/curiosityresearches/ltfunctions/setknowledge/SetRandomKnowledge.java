@@ -61,7 +61,7 @@ public class SetRandomKnowledge extends LootItemConditionalFunction {
 
         ItemStack knowledgeBook = new ItemStack(ResearchItemsRegistry.KNOWLEDGE_BOOK.get());
 
-        KnowledgeBook.setKnowledgeBookRecord(knowledgeBook, new KnowledgeBookData(selected, this.customName));
+        KnowledgeBookData.save(knowledgeBook, new KnowledgeBookData(selected, this.customName));
 
         return knowledgeBook;
     }

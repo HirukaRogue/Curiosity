@@ -1,10 +1,7 @@
 package net.hirukarogue.curiosityresearches.researchparches;
 
 import net.hirukarogue.curiosityresearches.CuriosityMod;
-import net.hirukarogue.curiosityresearches.researchparches.researchitems.InkandQuill;
-import net.hirukarogue.curiosityresearches.researchparches.researchitems.KnowledgeBook;
-import net.hirukarogue.curiosityresearches.researchparches.researchitems.ResearchParchment;
-import net.hirukarogue.curiosityresearches.researchparches.researchitems.SharedKnowledgeBook;
+import net.hirukarogue.curiosityresearches.researchparches.researchitems.*;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
@@ -32,9 +29,9 @@ public class ResearchItemsRegistry {
 
     //research fragment
     public static final RegistryObject<Item> INCOMPLETE_RESEARCH =
-            ITEMS.register("incomplete_research", () -> new Item(new Item.Properties()));
+            ITEMS.register("incomplete_research", () -> new IncompleteResearch(new Item.Properties()));
     public static final RegistryObject<Item> RESEARCH_NOTES =
-            ITEMS.register("research_notes", () -> new Item(new Item.Properties()));
+            ITEMS.register("research_notes", () -> new ResearchNotes(new Item.Properties()));
 
     //knowledge book
     public static final RegistryObject<Item> KNOWLEDGE_BOOK =

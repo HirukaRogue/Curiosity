@@ -4,6 +4,7 @@ import com.mojang.logging.LogUtils;
 import net.hirukarogue.curiosityresearches.ltfunctions.CuriosityLootItemFunctions;
 import net.hirukarogue.curiosityresearches.recipes.ResearchRegistry;
 import net.hirukarogue.curiosityresearches.records.Knowledge.Unlocks;
+import net.hirukarogue.curiosityresearches.records.ResearchNotesData;
 import net.hirukarogue.curiosityresearches.researchparches.ResearchItemsRegistry;
 import net.hirukarogue.curiosityresearches.researchtable.*;
 import net.hirukarogue.curiosityresearches.researchtable.researchtableblock.ResearchTableEntity;
@@ -43,6 +44,9 @@ public class CuriosityMod
 
     public static final ResourceKey<Registry<Unlocks>> UNLOCK_REGISTRY =
             ResourceKey.createRegistryKey(new ResourceLocation(MOD_ID, "unlocks"));
+
+    public static final ResourceKey<Registry<ResearchNotesData>> REGISTRED_RESEARCH_NOTES_DATA =
+            ResourceKey.createRegistryKey(new ResourceLocation(MOD_ID, "notes"));
 
     public CuriosityMod()
     {
@@ -121,6 +125,11 @@ public class CuriosityMod
                     UNLOCK_REGISTRY,
                     Unlocks.CODEC,
                     Unlocks.CODEC
+            );
+            event.dataPackRegistry(
+                    REGISTRED_RESEARCH_NOTES_DATA,
+                    ResearchNotesData.CODEC,
+                    ResearchNotesData.CODEC
             );
         }
     }

@@ -15,9 +15,9 @@ public class CuriosityCreativeTabs {
             DeferredRegister.create(Registries.CREATIVE_MODE_TAB, CuriosityMod.MOD_ID);
 
     public static final RegistryObject<CreativeModeTab> TUTORIALMOD_TAB =
-            CREATIVE_MODE_TABS.register("tutorialmod_tab",() -> CreativeModeTab.builder()
+            CREATIVE_MODE_TABS.register("curiosity_tab",() -> CreativeModeTab.builder()
                     .icon(() -> new ItemStack(ResearchItemsRegistry.EPIC_RESEARCH.get()))
-                    .title(Component.translatable("creativetab.tutorialmod_tab"))
+                    .title(Component.translatable("curiosity_researches.creative_tab"))
                     .displayItems((pParameters, pOutput) -> {
                         pOutput.accept(ResearchTableRegistry.RESEARCH_TABLE.get());
 

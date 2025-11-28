@@ -5,6 +5,7 @@ import net.hirukarogue.curiosityresearches.CuriosityMod;
 import net.hirukarogue.curiosityresearches.miscellaneous.researchcomponent.Component;
 import net.hirukarogue.curiosityresearches.miscellaneous.researchcomponent.ResearchComponentContainer;
 import net.hirukarogue.curiosityresearches.miscellaneous.data.ResearchJsonHelper;
+import net.hirukarogue.curiosityresearches.records.ResearchNotesData;
 import net.hirukarogue.curiosityresearches.records.ResearchParchmentData;
 import net.hirukarogue.curiosityresearches.researchparches.ResearchItemsRegistry;
 import net.hirukarogue.curiosityresearches.researchparches.researchitems.ResearchParchment;
@@ -78,6 +79,35 @@ public class ResearchRecipes implements Recipe<ResearchComponentContainer> {
                 } else if (researchComponents.get(i).getComponent().left().get() == Items.AIR) {
                     CuriosityMod.LOGGER.debug("Returning false because air is required but something else is present");
                     return false;
+                } else if (researchComponents.get(i).getKnowledgeKey() != null) {
+                    Item item = researchComponents.get(i).getComponent().left().get();
+                    if (item != ResearchItemsRegistry.INCOMPLETE_RESEARCH.get()) {
+                        CuriosityMod.LOGGER.warn("knowledge_key is reserved for Incomplete Research and cannot be used with other items");
+                        return false;
+                    }
+
+                    ResearchParchmentData rpData = ResearchParchmentData.load(pContainer.getItem(i+3));
+                    if (rpData == null || !rpData.knowledgeKey().equals(researchComponents.get(i).getKnowledgeKey())) {
+                        return false;
+                    }
+
+                } else if (researchComponents.get(i).getNoteLocation() != null) {
+                    Item item = researchComponents.get(i).getComponent().left().get();
+                    if (item != ResearchItemsRegistry.RESEARCH_NOTES.get()) {
+                        CuriosityMod.LOGGER.warn("note_location is reserved for Research Notes and cannot be used with other items");
+                        return false;
+                    }
+
+                    ResearchNotesData rnmDataContainer = ResearchNotesData.load(pContainer.getItem(i+3));
+                    ResearchNotesData rnmDataRecipe = pLevel.registryAccess().registry(CuriosityMod.REGISTRED_RESEARCH_NOTES_DATA).get().get(researchComponents.get(i).getNoteLocation());
+
+                    if (rnmDataRecipe == null || rnmDataContainer == null) {
+                        return false;
+                    }
+
+                    if (!rnmDataContainer.equals(rnmDataRecipe)) {
+                        return false;
+                    }
                 }
 
                 Item item = researchComponents.get(i).getComponent().left().get();
@@ -123,12 +153,13 @@ public class ResearchRecipes implements Recipe<ResearchComponentContainer> {
             case "epic" -> resaerchParchmentItem = ResearchItemsRegistry.EPIC_RESEARCH.get();
             case "legendary" -> resaerchParchmentItem = ResearchItemsRegistry.LEGENDARY_RESEARCH.get();
             case "MYTHIC" -> resaerchParchmentItem = ResearchItemsRegistry.MYTHIC_RESEARCH.get();
-            default -> throw new IllegalArgumentException("Invalid tier: " + tier + " tier must be one of common, uncommon, rare, epic, legendary, MYTHIC");
+            case "incomplete" -> resaerchParchmentItem = ResearchItemsRegistry.INCOMPLETE_RESEARCH.get();
+            default -> throw new IllegalArgumentException("Invalid tier: " + tier + " tier must be one of incomplete, common, uncommon, rare, epic, legendary, or MYTHIC");
         }
 
         ItemStack researchParchment = new ItemStack(resaerchParchmentItem);
 
-        ResearchParchment.setRPRecord(researchParchment, new ResearchParchmentData(knowledge, customName, tier));
+        ResearchParchmentData.save(researchParchment, new ResearchParchmentData(knowledge, customName));
 
         return researchParchment;
     }
