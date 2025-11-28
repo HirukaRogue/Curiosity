@@ -4,7 +4,7 @@ license="${mod_license}"
 
 [[mods]] #mandatory
 modId="curiosity_researches" #mandatory
-version="0.1-1.20.1" #mandatory
+version="b1.0.0-1.20.1" #mandatory
 displayName="Curiosity Researches" #mandatory
 authors="Hiruka Rogue" #optional
 

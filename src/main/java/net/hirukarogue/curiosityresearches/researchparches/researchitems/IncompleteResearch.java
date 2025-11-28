@@ -60,7 +60,15 @@ public class IncompleteResearch extends Item {
         if (knowledge == null) {
             return;
         }
-        tooltip.add(Component.literal(knowledge.knowledgeDescription()));
 
+        StringBuilder knowledgeText = new StringBuilder();
+        List<String> description = knowledge.knowledgeDescription();
+
+        for (String line : description) {
+            knowledgeText.append(line).append("\n");
+        }
+        // Remove last newline
+        knowledgeText.setLength(knowledgeText.length() - 1);
+        tooltip.add(Component.literal(knowledgeText.toString()));
     }
 }
