@@ -2,6 +2,15 @@
   "knowledge_name": "jewelry",
   "level": 1,
   "unlocks": [
-    "minecraft:diamond"
+    "minecraft:diamond",
+    "minecraft:diamond_helmet",
+    "minecraft:diamond_chestplate",
+    "minecraft:diamond_leggings",
+    "minecraft:diamond_boots",
+    "minecraft:diamond_sword",
+    "minecraft:diamond_pickaxe",
+    "minecraft:diamond_axe",
+    "minecraft:diamond_shovel",
+    "minecraft:diamond_hoe"
   ]
 }

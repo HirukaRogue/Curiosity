@@ -43,7 +43,7 @@ public class ResearchItemsRegistry {
 
     //ink and quill to write research notes
     public static final RegistryObject<Item> INK_AND_QUILL =
-            ITEMS.register("ink_and_quill", () -> new InkandQuill(new Item.Properties().durability(20)));
+            ITEMS.register("ink_and_quill", () -> new InkandQuill(new Item.Properties().durability(50)));
     public static final RegistryObject<Item> EMPTY_INK_AND_QUILL =
             ITEMS.register("empty_ink_and_quill", () -> new Item(new Item.Properties()));
 

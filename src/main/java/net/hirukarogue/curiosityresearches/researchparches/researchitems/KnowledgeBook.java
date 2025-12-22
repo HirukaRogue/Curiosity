@@ -45,14 +45,15 @@ public class KnowledgeBook extends Item {
         if (bookKnowledge != null && !bookKnowledge.isEmpty()) {
             for (int i = 0; i < bookKnowledge.size(); i++) {
                 if (i >= 5) {
-                    knowledges.append("and ").append(bookKnowledge.size() - 3).append(" more knowledges").append("\n");
+                    knowledges.append("and ").append(bookKnowledge.size() - 3).append(" more knowledges");
                     break;
                 }
                 Knowledge knowledge = bookKnowledge.get(i);
                 knowledges.append("- ").append(knowledge.knowledgeName()).append(" ").append(knowledge.level()).append("\n");
+                if (i < bookKnowledge.size() - 1) {
+                    knowledges.append("\n");
+                }
             }
-            // Remove last newline
-            knowledges.setLength(knowledges.length() - 1);
             tooltip.add(Component.literal(knowledges.toString()));
         } else {
             tooltip.add(Component.literal("This book is empty."));

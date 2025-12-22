@@ -67,10 +67,12 @@ public class ResearchParchment extends Item {
 
         StringBuilder researchDescription = new StringBuilder();
         List<String> descLines = knowledge.knowledgeDescription();
-        for (String line : descLines) {
-            researchDescription.append(line).append("\n");
+        for (int i = 0; i < descLines.size(); i++) {
+            researchDescription.append(descLines.get(i));
+            if (i < descLines.size() - 1) {
+                researchDescription.append("\n");
+            }
         }
-        researchDescription.setLength(researchDescription.length() - 1);
         tooltip.add(Component.literal(researchDescription.toString()));
 
     }

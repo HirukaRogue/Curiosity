@@ -4,20 +4,20 @@ license="${mod_license}"
 
 [[mods]] #mandatory
 modId="curiosity_researches" #mandatory
-version="b1.0.0-1.20.1" #mandatory
+version="1.0.0-1.20.1" #mandatory
 displayName="Curiosity Researches" #mandatory
 authors="Hiruka Rogue" #optional
 
 description='''This mod adds a research system to your game where you can customize what you want to require being researched'''
 
-[[dependencies.starcatcher]] #optional
+[[dependencies.curiosity_researches]] #optional
     modId="forge" #mandatory
     mandatory=true #mandatory
     versionRange="${forge_version_range}" #mandatory
     ordering="NONE"
     side="BOTH"
 
-[[dependencies.starcatcher]]
+[[dependencies.curiosity_researches]]
     modId="minecraft"
     mandatory=true
     versionRange="${minecraft_version_range}"

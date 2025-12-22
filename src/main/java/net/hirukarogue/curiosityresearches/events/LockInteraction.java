@@ -15,6 +15,8 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
+import java.util.Optional;
+
 @Mod.EventBusSubscriber(modid = CuriosityMod.MOD_ID, bus =  Mod.EventBusSubscriber.Bus.FORGE)
 public class LockInteraction {
     @SubscribeEvent
@@ -22,7 +24,7 @@ public class LockInteraction {
         Level level = event.getLevel();
         Block block = level.getBlockState(event.getPos()).getBlock();
 
-//        TagKey<Item> tags = block.asItem().builtInRegistryHolder().tags().iterator().next();
+        Optional<TagKey<Item>> tags = block.asItem().builtInRegistryHolder().tags().findFirst();
 
         ItemStack blockItemStack = new ItemStack(block.asItem());
         Unlocks unlocks = KnowledgeHelper.getUnlockFromItem(level, blockItemStack);
@@ -35,15 +37,17 @@ public class LockInteraction {
             }
         }
 
-//        unlocks = KnowledgeHelper.getUnlockFromItem(level, tags);
-//        knowledge = KnowledgeHelper.getKnowledgeFromUnlock(level, unlocks);
-//
-//        if (unlocks != null && knowledge != null) {
-//            if (!KnowledgeHelper.playerHasKnowledge(event.getEntity(), knowledge)) {
-//                event.getEntity().sendSystemMessage(Component.literal("You don't have knowledge to interact with this block."));
-//                event.setCanceled(true);
-//            }
-//        }
+        if (tags.isPresent()) {
+            unlocks = KnowledgeHelper.getUnlockFromItem(level, tags.get());
+            knowledge = KnowledgeHelper.getKnowledgeFromUnlock(level, unlocks);
+
+            if (unlocks != null && knowledge != null) {
+                if (!KnowledgeHelper.playerHasKnowledge(event.getEntity(), knowledge)) {
+                    event.getEntity().sendSystemMessage(Component.literal("You don't have knowledge to interact with this block."));
+                    event.setCanceled(true);
+                }
+            }
+        }
     }
 
     @SubscribeEvent
@@ -51,7 +55,7 @@ public class LockInteraction {
         Level level = event.getLevel();
         ItemStack itemStack = event.getItemStack();
 
-//        TagKey<Item> tags = itemStack.getItem().builtInRegistryHolder().tags().iterator().next();
+        Optional<TagKey<Item>> tags = itemStack.getItem().builtInRegistryHolder().tags().findFirst();
 
         Unlocks unlocks = KnowledgeHelper.getUnlockFromItem(level, itemStack);
         Knowledge knowledge = KnowledgeHelper.getKnowledgeFromUnlock(level, unlocks);
@@ -63,13 +67,15 @@ public class LockInteraction {
             }
         }
 
-//        unlocks = KnowledgeHelper.getUnlockFromItem(level, tags);
-//        knowledge = KnowledgeHelper.getKnowledgeFromUnlock(level, unlocks);
-//        if (unlocks != null && knowledge != null) {
-//            if (!KnowledgeHelper.playerHasKnowledge(event.getEntity(), knowledge)) {
-//                event.getEntity().sendSystemMessage(Component.literal("You don't have knowledge to interact with this item."));
-//                event.setCanceled(true);
-//            }
-//        }
+        if (tags.isPresent()) {
+            unlocks = KnowledgeHelper.getUnlockFromItem(level, tags.get());
+            knowledge = KnowledgeHelper.getKnowledgeFromUnlock(level, unlocks);
+            if (unlocks != null && knowledge != null) {
+                if (!KnowledgeHelper.playerHasKnowledge(event.getEntity(), knowledge)) {
+                    event.getEntity().sendSystemMessage(Component.literal("You don't have knowledge to interact with this item."));
+                    event.setCanceled(true);
+                }
+            }
+        }
     }
 }

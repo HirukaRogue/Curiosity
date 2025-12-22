@@ -1,5 +1,5 @@
 {
   "knowledge_name": "jewelry",
   "level": 1,
-  "knowledge_description": "The basics about jewelry crafting and materials."
+  "knowledge_description": ["The basics about jewelry crafting and materials."]
 }

@@ -39,11 +39,12 @@ public class ResearchNotes extends Item {
         if (data.note() != null && !data.note().isEmpty()) {
             StringBuilder noteText = new StringBuilder();
             List<String> noteStrings = data.note();
-            for (String noteLine : noteStrings) {
-                noteText.append(noteLine).append("\n");
+            for (int i = 0; i < noteStrings.size(); i++) {
+                noteText.append(noteStrings.get(i));
+                if (i < noteStrings.size() - 1) {
+                    noteText.append("\n");
+                }
             }
-            // Remove last newline
-            noteText.setLength(noteText.length() - 1);
             pTooltipComponents.add(Component.literal(noteText.toString()));
         }
         super.appendHoverText(pStack, pLevel, pTooltipComponents, pIsAdvanced);

@@ -64,11 +64,13 @@ public class IncompleteResearch extends Item {
         StringBuilder knowledgeText = new StringBuilder();
         List<String> description = knowledge.knowledgeDescription();
 
-        for (String line : description) {
-            knowledgeText.append(line).append("\n");
+        for (int i = 0; i < description.size(); i++) {
+            String line = description.get(i);
+            knowledgeText.append(line);
+            if (i < description.size() - 1) {
+                knowledgeText.append("\n");
+            }
         }
-        // Remove last newline
-        knowledgeText.setLength(knowledgeText.length() - 1);
         tooltip.add(Component.literal(knowledgeText.toString()));
     }
 }
