@@ -48,7 +48,6 @@ public class ResearchMenu extends AbstractContainerMenu {
 
                 @Override
                 public void onTake(Player pPlayer, ItemStack pStack) {
-                    blockEntity.consumeForResearch();
                     super.onTake(pPlayer, pStack);
                 }
             });

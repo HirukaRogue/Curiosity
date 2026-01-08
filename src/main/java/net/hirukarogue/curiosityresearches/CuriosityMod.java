@@ -2,6 +2,7 @@ package net.hirukarogue.curiosityresearches;
 
 import com.mojang.logging.LogUtils;
 import net.hirukarogue.curiosityresearches.ltfunctions.CuriosityLootItemFunctions;
+import net.hirukarogue.curiosityresearches.network.PacketHandler;
 import net.hirukarogue.curiosityresearches.recipes.ResearchRegistry;
 import net.hirukarogue.curiosityresearches.records.Knowledge.Unlocks;
 import net.hirukarogue.curiosityresearches.records.ResearchNotesData;
@@ -27,6 +28,8 @@ import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.network.NetworkRegistry;
+import net.minecraftforge.network.simple.SimpleChannel;
 import net.minecraftforge.registries.DataPackRegistryEvent;
 import org.slf4j.Logger;
 
@@ -50,8 +53,11 @@ public class CuriosityMod
 
     public CuriosityMod()
     {
+        //Event buss
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
+
+        //Mod Stuffs
         //creative tab
         CuriosityCreativeTabs.register(modEventBus);
 
@@ -70,6 +76,11 @@ public class CuriosityMod
         //Loot Item Functions
         CuriosityLootItemFunctions.register(modEventBus);
 
+        //Packet Handler
+        PacketHandler.register();
+
+
+        //Forge Stuffs
         // Register the commonSetup method for modloading
         modEventBus.addListener(this::commonSetup);
 

@@ -2,6 +2,11 @@ package net.hirukarogue.curiosityresearches.researchtable.researchtablemenu;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.hirukarogue.curiosityresearches.CuriosityMod;
+import net.hirukarogue.curiosityresearches.network.ponderPackets.C2SPonderPacket;
+import net.hirukarogue.curiosityresearches.network.PacketHandler;
+import net.hirukarogue.curiosityresearches.network.researchPacket.C2SResearchPacket;
+import net.hirukarogue.curiosityresearches.researchtable.researchtablemenu.buttons.PonderButton;
+import net.hirukarogue.curiosityresearches.researchtable.researchtablemenu.buttons.ResearchButton;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.GameRenderer;
@@ -9,13 +14,11 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 
-import java.util.concurrent.atomic.AtomicReference;
-
 public class ResearchMenuScreen extends AbstractContainerScreen<ResearchMenu> {
     private static final ResourceLocation TEXTURE =
             new ResourceLocation(CuriosityMod.MOD_ID, "textures/gui/research_gui.png");
 
-    private String ponderOutput = "";
+    private static String ponderOutput = "";
     private int ponderTimer = 0;
 
     public ResearchMenuScreen(ResearchMenu pMenu, Inventory pPlayerInventory, Component pTitle) {
@@ -35,13 +38,37 @@ public class ResearchMenuScreen extends AbstractContainerScreen<ResearchMenu> {
                 176,
                 0,
                 16,
-                32,
-                32,
+                16,
+                16,
                 button -> {
-                    this.ponderOutput = this.menu.blockEntity.ponder();
-                    this.ponderTimer = 20 * 30;
+                    PacketHandler.sendToServer(new C2SPonderPacket(this.menu.blockEntity.getBlockPos()));
                 }
         ));
+
+        this.addRenderableWidget(new ResearchButton(
+                this.leftPos + 152,
+                this.topPos + 25,
+                16,
+                16,
+                0,
+                0,
+                16,
+                16,
+                16,
+                button -> {
+                    PacketHandler.sendToServer(new C2SResearchPacket(this.menu.blockEntity.getBlockPos()));
+                }
+        ));
+    }
+
+    public void setPonderMessage(String message) {
+        ponderOutput = message;
+        this.ponderTimer = 20 * 5;
+    }
+
+    @Override
+    protected void renderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY) {
+        guiGraphics.drawString(this.font, this.title, 8, 6, 0x404040, false);
     }
 
     @Override
@@ -59,7 +86,7 @@ public class ResearchMenuScreen extends AbstractContainerScreen<ResearchMenu> {
         if (this.ponderTimer > 0) {
             this.ponderTimer--;
             if (this.ponderTimer == 0) {
-                this.ponderOutput = "";
+                ponderOutput = "";
             }
         }
     }
@@ -70,9 +97,9 @@ public class ResearchMenuScreen extends AbstractContainerScreen<ResearchMenu> {
         this.renderBackground(guiGraphics);
         super.render(guiGraphics, mouseX, mouseY, partialTicks);
 
-        if (!this.ponderOutput.isEmpty() && this.ponderTimer > 0) {
-            int textX = this.leftPos + 10;
-            int textY = this.topPos + 6;
+        if (!ponderOutput.isEmpty() && this.ponderTimer > 0) {
+            int textX = this.leftPos + 6;
+            int textY = this.topPos + 105;
             guiGraphics.drawString(this.font, this.ponderOutput, textX, textY, 0xFFFFFF, false);
         }
 

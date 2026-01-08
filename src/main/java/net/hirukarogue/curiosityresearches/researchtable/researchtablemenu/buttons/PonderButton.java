@@ -1,9 +1,8 @@
-package net.hirukarogue.curiosityresearches.researchtable.researchtablemenu;
+package net.hirukarogue.curiosityresearches.researchtable.researchtablemenu.buttons;
 
 import net.hirukarogue.curiosityresearches.CuriosityMod;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
@@ -20,7 +19,7 @@ public class PonderButton extends Button {
     protected final int textureWidth;
     protected final int textureHeight;
 
-    protected PonderButton(int x, int y, int width, int height, int xTexStart, int yTexStart, int yDiffTex, int textureWidth, int textureHeight, Button.OnPress onPress) {
+    public PonderButton(int x, int y, int width, int height, int xTexStart, int yTexStart, int yDiffTex, int textureWidth, int textureHeight, Button.OnPress onPress) {
         super(x, y, width, height, Component.literal(""), onPress, DEFAULT_NARRATION);
         this.xTexStart = xTexStart;
         this.yTexStart = yTexStart;

@@ -178,15 +178,6 @@ public class ResearchTableBlockEntity extends BlockEntity implements MenuProvide
         isProcessing = false;
     }
 
-    public void removeResult() {
-        if (!hasRecipe() && !isProcessing) {
-            isProcessing = true;
-            CuriosityMod.LOGGER.debug("removing result");
-            this.itemHandler.extractItem(PAPER_OUTPUT_SLOT, 1, false);
-            isProcessing = false;
-        }
-    }
-
     public void consumeForResearch() {
         Optional<ResearchRecipes> recipe = getCurrentRecipe();
 
@@ -203,7 +194,25 @@ public class ResearchTableBlockEntity extends BlockEntity implements MenuProvide
         consumeInk();
     }
 
+    public String research() {
+        if (level == null || level.isClientSide()) {
+            return "";
+        }
+
+        if (hasRecipe()) {
+            consumeForResearch();
+            popResult();
+            return "Research complete!";
+        }
+
+        return "Not enough components to complete the research.";
+    }
+
     public String ponder() {
+        if (level == null || level.isClientSide()) {
+            return "";
+        }
+
         boolean hasItem = false;
         for (int i = 0; i < RESEARCH_ELEMENTS.length; i++) {
             if (!this.itemHandler.getStackInSlot(RESEARCH_ELEMENTS[i]).isEmpty()) {
@@ -226,6 +235,373 @@ public class ResearchTableBlockEntity extends BlockEntity implements MenuProvide
             presentCounts[i] = s.isEmpty() ? 0 : s.getCount();
         }
 
+        List<ResearchRecipes> matches = getMatchingRecipes();
+
+        if (matches.isEmpty()) {
+            return "You won't learn anything new by pondering upon these components.";
+        }
+
+        int randomRecipe = this.level.random.nextInt(matches.size());
+        ResearchRecipes selected = matches.get(randomRecipe);
+
+        List<String> possibleParts = getAllPossibleParts(selected);
+
+        if (possibleParts.isEmpty()) {
+            return "guess it's everything in order.";
+        }
+
+        int select = this.level.random.nextInt(possibleParts.size());
+        String whichPart = possibleParts.get(select);
+
+        return pickMessage(whichPart, selected);
+    }
+
+    private String pickMessage(String choose, ResearchRecipes selected) {
+        String message = "";
+        switch (choose) {
+            case "misspositioned component" -> {
+                List<ItemStack> misspositionedItem = getAllMisspositionedItem(selected);
+                int randomIndex = this.level.random.nextInt(misspositionedItem.size());
+                ItemStack item = misspositionedItem.get(randomIndex);
+                for (int i = 0; i < selected.getComponents().size(); i++) {
+                    if (selected.getComponents().get(i).getComponent().left().isPresent()) {
+                        if (selected.getComponents().get(i).getComponent().left().isEmpty()) {
+                            continue;
+                        }
+                        if (item.getItem() == selected.getComponents().get(i).getComponent().left().get()) {
+                            Item itemObj = selected.getComponents().get(i).getComponent().left().get();
+                            String itemName = (new ItemStack(itemObj)).getHoverName().getString();
+
+                            if (!consumeForPonder()) {
+                                message = "not enough ink.";
+                                break;
+                            }
+
+                            switch (i) {
+                                case 0 -> {
+                                    message = "maybe i should place " + itemName + " in the top left slot.";
+                                }
+                                case 1 -> {
+                                    message = "maybe i should place " + itemName + " in the top right slot.";
+                                }
+                                case 2 -> {
+                                    message = "maybe i should place " + itemName + " in the middle left slot.";
+                                }
+                                case 3 -> {
+                                    message = "maybe i should place " + itemName + " in the central slot.";
+                                }
+                                case 4 -> {
+                                    message = "maybe i should place " + itemName + " in the middle right slot.";
+                                }
+                                case 5 -> {
+                                    message = "maybe i should place " + itemName + " in the bottom left slot.";
+                                }
+                                case 6 -> {
+                                    message = "maybe i should place " + itemName + " in the bottom right slot.";
+                                }
+                                default -> {
+                                    message = "guess it's everything in order";
+                                }
+                            }
+                        }
+                    }
+
+                    if (selected.getComponents().get(i).getComponent().right().isPresent()) {
+                        AtomicBoolean isTag = new AtomicBoolean(false);
+                        int copy = i;
+                        selected.getComponents().get(i).getComponent().right().stream().forEach(tag -> {
+                            if (item.getItem() == itemHandler.getStackInSlot(copy).getItem()) {
+                                isTag.set(true);
+                            }
+                        });
+                        if (isTag.get()) {
+                            String itemName = itemHandler.getStackInSlot(RESEARCH_ELEMENTS[i]).getHoverName().getString();
+
+                            if (!consumeForPonder()) {
+                                message = "not enough ink.";
+                            }
+
+                            switch (i) {
+                                case 0 -> {
+                                    message = "maybe i should place " + itemName + " in the top left slot.";
+                                }
+                                case 1 -> {
+                                    message = "maybe i should place " + itemName + " in the top right slot.";
+                                }
+                                case 2 -> {
+                                    message = "maybe i should place " + itemName + " in the middle left slot.";
+                                }
+                                case 3 -> {
+                                    message = "maybe i should place " + itemName + " in the central slot.";
+                                    break;
+                                }
+                                case 4 -> {
+                                    message = "maybe i should place " + itemName + " in the middle right slot.";
+                                }
+                                case 5 -> {
+                                    message = "maybe i should place " + itemName + " in the bottom left slot.";
+                                }
+                                case 6 -> {
+                                    message = "maybe i should place " + itemName + " in the bottom right slot.";
+                                }
+                                default -> {
+                                    message = "guess it's everything in order";
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            case "insufficient quantity" -> {
+                List<net.hirukarogue.curiosityresearches.miscellaneous.researchcomponent.Component> insufComponents = getAllInsuficientComponents(selected);
+                int randomIndex = this.level.random.nextInt(insufComponents.size());
+                net.hirukarogue.curiosityresearches.miscellaneous.researchcomponent.Component comp = insufComponents.get(randomIndex);
+
+                if (comp.getComponent().left().isPresent()) {
+                    ItemStack itemStack = new ItemStack(comp.getComponent().left().get());
+                    String itemName = itemStack.getHoverName().getString();
+                    if (!consumeForPonder()) {
+                        message = "not enough ink.";
+                        break;
+                    }
+
+                    message = "maybe i should try adding more " + itemName + ".";
+                } else if (comp.getComponent().right().isPresent()) {
+                    AtomicReference<List<ItemStack>> itemStack = new AtomicReference<>(new ArrayList<>());
+                    AtomicBoolean isTag = new AtomicBoolean(false);
+                    comp.getComponent().right().stream().forEach(tag -> {
+                        isTag.set(true);
+                        List<Item> itemsInTag = level.holderLookup(ForgeRegistries.ITEMS.getRegistryKey())
+                                .get(tag)
+                                .map(HolderSet::stream)
+                                .orElse(Stream.empty())
+                                .map(Holder::value)
+                                .toList();
+                        if (!itemsInTag.isEmpty()) {
+                            itemStack.set(new ArrayList<>());
+                            for (Item item : itemsInTag) {
+                                itemStack.get().add(new ItemStack(item));
+                            }
+                        }
+                    });
+                    if (isTag.get()) {
+                        StringBuilder itemsName = new StringBuilder();
+                        for (int j = 0; j < itemStack.get().size(); j++) {
+                            String itemName = itemStack.get().get(j).getHoverName().getString();
+                            itemsName.append(itemName);
+                            if (j < itemStack.get().size() - 2) {
+                                itemsName.append(", ");
+                            } else if (j == itemStack.get().size() - 2) {
+                                itemsName.append(" or ");
+                            }
+                        }
+                        if (!consumeForPonder()) {
+                            message = "not enough ink.";
+                            break;
+                        }
+
+                        message = "maybe i should try adding more " + itemsName + ".";
+                    } else {
+                        message = "guess it's everything in order.";
+                    }
+                }
+
+            }
+            case "lacking components" -> {
+                List<net.hirukarogue.curiosityresearches.miscellaneous.researchcomponent.Component> requiredComponents = getAllRequiredComponents(selected);
+                Either<Item, TagKey<Item>> selectedItem = null;
+                List<ItemStack> stacks = new ArrayList<>();
+                for (int i = 0; i < RESEARCH_ELEMENTS.length; i++) {
+                    ItemStack s = this.itemHandler.getStackInSlot(RESEARCH_ELEMENTS[i]);
+                    stacks.add(s);
+                }
+
+                int index = this.level.random.nextInt(requiredComponents.size());
+                selectedItem = requiredComponents.get(index).getComponent();
+
+                if (!consumeForPonder()) {
+                    message = "not enough ink.";
+                    break;
+                }
+
+                if (selectedItem.left().isPresent()) {
+                    Item itemObj = selectedItem.left().get();
+                    String itemName = (new ItemStack(itemObj)).getHoverName().getString();
+                    message = "maybe i should try adding " + itemName + ".";
+                    break;
+                } else if (selectedItem.right().isPresent()) {
+                    StringBuilder items = new StringBuilder();
+                    List<String> itemNames = new ArrayList<>();
+                    selectedItem.right().stream().forEach(tag -> {
+                        Collection<Item> itemsInTag = level.holderLookup(ForgeRegistries.ITEMS.getRegistryKey())
+                                .get(tag)
+                                .map(HolderSet::stream)
+                                .orElse(Stream.empty())
+                                .map(Holder::value)
+                                .toList();
+                        for (Item item : itemsInTag) {
+                            String itemName = (new ItemStack(item)).getHoverName().getString();
+                            itemNames.add(itemName);
+                        }
+                    });
+                    for (int i = 0; i < itemNames.size(); i++) {
+                        items.append(itemNames.get(i));
+                        if (i < itemNames.size() - 2) {
+                            items.append(", ");
+                        } else if (i == itemNames.size() - 2) {
+                            items.append(" or ");
+                        }
+                    }
+
+                    message = "maybe i should try adding " + items + ".";
+                    break;
+                }
+
+                message = "guess it's everything in order.";
+            }
+            default -> {
+                message = "guess it's everything in order.";
+            }
+        }
+
+        return message;
+    }
+
+    private List<ItemStack> getAllMisspositionedItem(ResearchRecipes selected){
+        List<ItemStack> misspositionedItem = new ArrayList<>();
+        for (int i = 0; i < RESEARCH_ELEMENTS.length; i++) {
+            ItemStack s = this.itemHandler.getStackInSlot(RESEARCH_ELEMENTS[i]);
+            if (!s.isEmpty()) {
+                boolean correctPosition = false;
+                if (selected.getComponents().get(i).getComponent().left().isPresent()) {
+                    if (selected.getComponents().get(i).getComponent().left().get() == s.getItem()) {
+                        correctPosition = true;
+                    }
+                } else if (selected.getComponents().get(i).getComponent().right().isPresent()) {
+                    AtomicBoolean isTag = new AtomicBoolean(false);
+                    int copy = i;
+                    selected.getComponents().get(i).getComponent().right().stream().forEach(tag -> {
+                        if (s.is(tag)) {
+                            isTag.set(true);
+                        }
+                    });
+                    if (isTag.get()) {
+                        correctPosition = true;
+                    }
+                }
+                if (!correctPosition) {
+                    misspositionedItem.add(s);
+                }
+            }
+        }
+
+        return misspositionedItem;
+    }
+
+    private List<net.hirukarogue.curiosityresearches.miscellaneous.researchcomponent.Component> getAllInsuficientComponents(ResearchRecipes selected) {
+        List<net.hirukarogue.curiosityresearches.miscellaneous.researchcomponent.Component> insufComponents = new ArrayList<>();
+        for (int i = 0; i < RESEARCH_ELEMENTS.length; i++) {
+            if (this.itemHandler.getStackInSlot(RESEARCH_ELEMENTS[i]).isEmpty()) {
+                continue;
+            }
+            for (net.hirukarogue.curiosityresearches.miscellaneous.researchcomponent.Component comp : selected.getComponents()) {
+                if (comp.getComponent().left().isPresent()) {
+                    ItemStack s = this.itemHandler.getStackInSlot(RESEARCH_ELEMENTS[i]);
+                    if (comp.getComponent().left().get().equals(s.getItem())) {
+                        if (s.getCount() < selected.getComponentAmout(i)) {
+                            insufComponents.add(comp);
+                            break;
+                        }
+                    }
+                } else if (comp.getComponent().right().isPresent()) {
+                    AtomicBoolean insuficientForTag = new AtomicBoolean(false);
+                    final int currentSlot = RESEARCH_ELEMENTS[i];
+                    int index = i;
+                    comp.getComponent().right().stream().forEach(tag -> {
+                        if (itemHandler.getStackInSlot(currentSlot).is(tag)) {
+                            ItemStack s = itemHandler.getStackInSlot(currentSlot);
+                            if (s.getCount() < selected.getComponentAmout(index)) {
+                                insuficientForTag.set(true);
+                            }
+                        }
+                    });
+                    if (insuficientForTag.get()) {
+                        insufComponents.add(comp);
+                        break;
+                    }
+                }
+            }
+        }
+        return insufComponents;
+    }
+
+    private List<net.hirukarogue.curiosityresearches.miscellaneous.researchcomponent.Component> getAllRequiredComponents(ResearchRecipes selected) {
+        List<net.hirukarogue.curiosityresearches.miscellaneous.researchcomponent.Component> requiredComponents = new ArrayList<>();
+        for (net.hirukarogue.curiosityresearches.miscellaneous.researchcomponent.Component comp : selected.getComponents()) {
+            if (comp.getComponent().left().isPresent()) {
+                if (comp.getComponent().left().get().equals(Items.AIR)) {
+                    continue;
+                }
+                requiredComponents.add(comp);
+            } else if (comp.getComponent().right().isPresent()) {
+                requiredComponents.add(comp);
+            }
+        }
+        for (int researchElement : RESEARCH_ELEMENTS) {
+            ItemStack s = this.itemHandler.getStackInSlot(researchElement);
+            if (s.isEmpty()) {
+                continue;
+            }
+
+            requiredComponents.removeIf(comp -> {
+                if (comp.getComponent().left().isPresent()) {
+                    return comp.getComponent().left().get() == s.getItem();
+                } else if (comp.getComponent().right().isPresent()) {
+                    AtomicBoolean isTag = new AtomicBoolean(false);
+                    comp.getComponent().right().stream().forEach(tag -> {
+                        if (s.is(tag)) {
+                            isTag.set(true);
+                        }
+                    });
+                    return isTag.get();
+                }
+                return false;
+            });
+        }
+        return requiredComponents;
+    }
+
+    private List<String> getAllPossibleParts(ResearchRecipes selected) {
+        List<ItemStack> misspositionedItem = getAllMisspositionedItem(selected);
+
+        boolean insuficientQuantity = false;
+        List<net.hirukarogue.curiosityresearches.miscellaneous.researchcomponent.Component> insufComponents = getAllInsuficientComponents(selected);
+
+        if (!insufComponents.isEmpty()) {
+            insuficientQuantity = true;
+        }
+
+        boolean lackingcomponent = false;
+        List<net.hirukarogue.curiosityresearches.miscellaneous.researchcomponent.Component> requiredComponents = getAllRequiredComponents(selected);
+        if (!requiredComponents.isEmpty()) {
+            lackingcomponent = true;
+        }
+
+        List<String> possibleParts = new ArrayList<>();
+        if (!misspositionedItem.isEmpty()) {
+            possibleParts.add("misspositioned component");
+        }
+        if (insuficientQuantity) {
+            possibleParts.add("insufficient quantity");
+        }
+        if (lackingcomponent) {
+            possibleParts.add("lacking components");
+        }
+
+        return possibleParts;
+    }
+
+    private List<ResearchRecipes> getMatchingRecipes() {
         List<ResearchRecipes> allRecipes = this.level.getRecipeManager().getAllRecipesFor(ResearchRecipes.Type.INSTANCE);
         List<ResearchRecipes> matches = new java.util.ArrayList<>();
 
@@ -263,329 +639,7 @@ public class ResearchTableBlockEntity extends BlockEntity implements MenuProvide
             if (ok) matches.add(r);
         }
 
-        if (matches.isEmpty()) {
-            return "You won't learn anything new by pondering upon these components.";
-        }
-
-        int randomRecipe = this.level.random.nextInt(matches.size());
-        ResearchRecipes selected = matches.get(randomRecipe);
-        List<ItemStack> misspositionedItem = new ArrayList<>();
-        for (int i = 0; i < RESEARCH_ELEMENTS.length; i++) {
-            ItemStack s = this.itemHandler.getStackInSlot(RESEARCH_ELEMENTS[i]);
-            if (!s.isEmpty()) {
-                boolean correctPosition = false;
-                if (selected.getComponents().get(i).getComponent().left().isPresent()) {
-                    if (selected.getComponents().get(i).getComponent().left().get() == s.getItem()) {
-                        correctPosition = true;
-                    }
-                } else if (selected.getComponents().get(i).getComponent().right().isPresent()) {
-                    AtomicBoolean isTag = new AtomicBoolean(false);
-                    int copy = i;
-                    selected.getComponents().get(i).getComponent().right().stream().forEach(tag -> {
-                        if (s.is(tag)) {
-                            isTag.set(true);
-                        }
-                    });
-                    if (isTag.get()) {
-                        correctPosition = true;
-                    }
-                }
-                if (!correctPosition) {
-                    misspositionedItem.add(s);
-                }
-            }
-        }
-
-        boolean insuficientQuantity = false;
-        List<net.hirukarogue.curiosityresearches.miscellaneous.researchcomponent.Component> insufComponents = new ArrayList<>();
-        for (int i = 0; i < RESEARCH_ELEMENTS.length; i++) {
-            if (this.itemHandler.getStackInSlot(RESEARCH_ELEMENTS[i]).isEmpty()) {
-                continue;
-            }
-            for (net.hirukarogue.curiosityresearches.miscellaneous.researchcomponent.Component comp : selected.getComponents()) {
-                 if (comp.getComponent().left().isPresent()) {
-                     ItemStack s = this.itemHandler.getStackInSlot(RESEARCH_ELEMENTS[i]);
-                     if (comp.getComponent().left().get().equals(s.getItem())) {
-                        if (s.getCount() < selected.getComponentAmout(i)) {
-                            insufComponents.add(comp);
-                            break;
-                        }
-                    }
-                } else if (comp.getComponent().right().isPresent()) {
-                    AtomicBoolean insuficientForTag = new AtomicBoolean(false);
-                    final int currentSlot = RESEARCH_ELEMENTS[i];
-                    int index = i;
-                    comp.getComponent().right().stream().forEach(tag -> {
-                        if (itemHandler.getStackInSlot(currentSlot).is(tag)) {
-                            ItemStack s = itemHandler.getStackInSlot(currentSlot);
-                            if (s.getCount() < selected.getComponentAmout(index)) {
-                                insuficientForTag.set(true);
-                            }
-                        }
-                    });
-                    if (insuficientForTag.get()) {
-                        insufComponents.add(comp);
-                        break;
-                    }
-                }
-            }
-        }
-        if (!insufComponents.isEmpty()) {
-            insuficientQuantity = true;
-        }
-
-        boolean lackingcomponent = false;
-        List<net.hirukarogue.curiosityresearches.miscellaneous.researchcomponent.Component> requiredComponents = new ArrayList<>();
-        for (net.hirukarogue.curiosityresearches.miscellaneous.researchcomponent.Component comp : selected.getComponents()) {
-            if (comp.getComponent().left().isPresent()) {
-                if (comp.getComponent().left().get().equals(Items.AIR)) {
-                    continue;
-                }
-                requiredComponents.add(comp);
-            } else if (comp.getComponent().right().isPresent()) {
-                requiredComponents.add(comp);
-            }
-        }
-        for (int i = 0; i < RESEARCH_ELEMENTS.length; i++) {
-            ItemStack s = this.itemHandler.getStackInSlot(RESEARCH_ELEMENTS[i]);
-            if (s.isEmpty()) {
-                continue;
-            }
-
-            requiredComponents.removeIf(comp -> {
-                if (comp.getComponent().left().isPresent()) {
-                    return comp.getComponent().left().get() == s.getItem();
-                } else if (comp.getComponent().right().isPresent()) {
-                    AtomicBoolean isTag = new AtomicBoolean(false);
-                    comp.getComponent().right().stream().forEach(tag -> {
-                        if (s.is(tag)) {
-                            isTag.set(true);
-                        }
-                    });
-                    return isTag.get();
-                }
-                return false;
-            });
-        }
-        if (!requiredComponents.isEmpty()) {
-            lackingcomponent = true;
-        }
-
-        List<String> possibleParts = new ArrayList<>();
-        if (!misspositionedItem.isEmpty()) {
-            possibleParts.add("misspositioned component");
-        }
-        if (insuficientQuantity) {
-            possibleParts.add("insufficient quantity");
-        }
-        if (lackingcomponent) {
-            possibleParts.add("lacking components");
-        }
-
-        if (possibleParts.isEmpty()) {
-            return "guess it's everything in order.";
-        }
-
-        int select = this.level.random.nextInt(possibleParts.size());
-        String whichPart = possibleParts.get(select);
-
-        switch (whichPart) {
-            case "misspositioned component" -> {
-                int randomIndex = this.level.random.nextInt(misspositionedItem.size());
-                ItemStack item = misspositionedItem.get(randomIndex);
-                for (int i = 0; i < selected.getComponents().size(); i++) {
-                    if (selected.getComponents().get(i).getComponent().left().isPresent()) {
-                        if (selected.getComponents().get(i).getComponent().left().isEmpty()) {
-                            continue;
-                        }
-                        if (item.getItem() == selected.getComponents().get(i).getComponent().left().get()) {
-                            Item itemObj = selected.getComponents().get(i).getComponent().left().get();
-                            String itemName = ForgeRegistries.ITEMS.getKey(itemObj).toString();
-
-                            if (!consumeForPonder()) {
-                                return "not enough ink.";
-                            }
-
-                            switch (i) {
-                                case 0 -> {
-                                    return "maybe i should place " + itemName + " in the top left slot.";
-                                }
-                                case 1 -> {
-                                    return "maybe i should place " + itemName + " in the top right slot.";
-                                }
-                                case 2 -> {
-                                    return "maybe i should place " + itemName + " in the middle left slot.";
-                                }
-                                case 3 -> {
-                                    return "maybe i should place " + itemName + " in the central slot.";
-                                }
-                                case 4 -> {
-                                    return "maybe i should place " + itemName + " in the middle right slot.";
-                                }
-                                case 5 -> {
-                                    return "maybe i should place " + itemName + " in the bottom left slot.";
-                                }
-                                case 6 -> {
-                                    return "maybe i should place " + itemName + " in the bottom right slot.";
-                                }
-                                default -> {
-                                    return "guess it's everything in order";
-                                }
-                            }
-                        }
-                    }
-
-                    if (selected.getComponents().get(i).getComponent().right().isPresent()) {
-                        AtomicBoolean isTag = new AtomicBoolean(false);
-                        int copy = i;
-                        selected.getComponents().get(i).getComponent().right().stream().forEach(tag -> {
-                            if (item.getItem() == itemHandler.getStackInSlot(copy).getItem()) {
-                                isTag.set(true);
-                            }
-                        });
-                        if (isTag.get()) {
-                            Item itemObj = itemHandler.getStackInSlot(i).getItem();
-                            String itemName = ForgeRegistries.ITEMS.getKey(itemObj).toString();
-
-                            if (!consumeForPonder()) {
-                                return "not enough ink.";
-                            }
-
-                            switch (i) {
-                                case 0 -> {
-                                    return "maybe i should place " + itemName + " in the top left slot.";
-                                }
-                                case 1 -> {
-                                    return "maybe i should place " + itemName + " in the top right slot.";
-                                }
-                                case 2 -> {
-                                    return "maybe i should place " + itemName + " in the middle left slot.";
-                                }
-                                case 3 -> {
-                                    return "maybe i should place " + itemName + " in the central slot.";
-                                }
-                                case 4 -> {
-                                    return "maybe i should place " + itemName + " in the middle right slot.";
-                                }
-                                case 5 -> {
-                                    return "maybe i should place " + itemName + " in the bottom left slot.";
-                                }
-                                case 6 -> {
-                                    return "maybe i should place " + itemName + " in the bottom right slot.";
-                                }
-                                default -> {
-                                    return "guess it's everything in order";
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            case "insufficient quantity" -> {
-                int randomIndex = this.level.random.nextInt(insufComponents.size());
-                net.hirukarogue.curiosityresearches.miscellaneous.researchcomponent.Component comp = insufComponents.get(randomIndex);
-
-                if (comp.getComponent().left().isPresent()) {
-                    ItemStack itemStack = new ItemStack(comp.getComponent().left().get());
-                    String itemName = ForgeRegistries.ITEMS.getKey(itemStack.getItem()).toString();
-                    if (!consumeForPonder()) {
-                        return "not enough ink.";
-                    }
-
-                    return "maybe i should try adding more " + itemName + ".";
-                } else if (comp.getComponent().right().isPresent()) {
-                    AtomicReference<List<ItemStack>> itemStack = new AtomicReference<>(new ArrayList<>());
-                    AtomicBoolean isTag = new AtomicBoolean(false);
-                    comp.getComponent().right().stream().forEach(tag -> {
-                        isTag.set(true);
-                        List<Item> itemsInTag = level.holderLookup(ForgeRegistries.ITEMS.getRegistryKey())
-                                .get(tag)
-                                .map(HolderSet::stream)
-                                .orElse(Stream.empty())
-                                .map(Holder::value)
-                                .toList();
-                        if (!itemsInTag.isEmpty()) {
-                            itemStack.set(new ArrayList<>());
-                            for (Item item : itemsInTag) {
-                                itemStack.get().add(new ItemStack(item));
-                            }
-                        }
-                    });
-                    if (isTag.get()) {
-                        StringBuilder itemsName = new StringBuilder();
-                        for (int j = 0; j < itemStack.get().size(); j++) {
-                            String itemName = ForgeRegistries.ITEMS.getKey(itemStack.get().get(j).getItem()).toString();
-                            itemsName.append(itemName);
-                            if (j < itemStack.get().size() - 2) {
-                                itemsName.append(", ");
-                            } else if (j == itemStack.get().size() - 2) {
-                                itemsName.append(" or ");
-                            }
-                        }
-                        if (!consumeForPonder()) {
-                            return "not enough ink.";
-                        }
-
-                        return "maybe i should try adding more " + itemsName + ".";
-                    } else {
-                        return "guess it's everything in order.";
-                    }
-                }
-
-            }
-            case "lacking components" -> {
-                Either<Item, TagKey<Item>> selectedItem = null;
-                List<ItemStack> stacks = new ArrayList<>();
-                for (int i = 0; i < RESEARCH_ELEMENTS.length; i++) {
-                    ItemStack s = this.itemHandler.getStackInSlot(RESEARCH_ELEMENTS[i]);
-                    stacks.add(s);
-                }
-
-                int index = this.level.random.nextInt(requiredComponents.size());
-                selectedItem = requiredComponents.get(index).getComponent();
-
-                if (!consumeForPonder()) {
-                    return "not enough ink.";
-                }
-
-                if (selectedItem.left().isPresent()) {
-                    Item itemObj = selectedItem.left().get();
-                    String itemName = ForgeRegistries.ITEMS.getKey(itemObj).toString();
-                    return "maybe i should try adding " + itemName + ".";
-                } else if (selectedItem.right().isPresent()) {
-                    StringBuilder items = new StringBuilder();
-                    List<String> itemNames = new ArrayList<>();
-                    selectedItem.right().stream().forEach(tag -> {
-                        Collection<Item> itemsInTag = level.holderLookup(ForgeRegistries.ITEMS.getRegistryKey())
-                                .get(tag)
-                                .map(HolderSet::stream)
-                                .orElse(Stream.empty())
-                                .map(Holder::value)
-                                .toList();
-                        for (Item item : itemsInTag) {
-                            String itemName = ForgeRegistries.ITEMS.getKey(item).toString();
-                            itemNames.add(itemName);
-                        }
-                    });
-                    for (int i = 0; i < itemNames.size(); i++) {
-                        items.append(itemNames.get(i));
-                        if (i < itemNames.size() - 2) {
-                            items.append(", ");
-                        } else if (i == itemNames.size() - 2) {
-                            items.append(" or ");
-                        }
-                    }
-
-                    return "maybe i should try adding " + items + ".";
-                }
-
-                return "guess it's everything in order.";
-            }
-            default -> {
-                return "guess it's everything in order.";
-            }
-        }
-        return "guess it's everything in order.";
+        return matches;
     }
 
     private boolean consumeForPonder() {
@@ -593,31 +647,50 @@ public class ResearchTableBlockEntity extends BlockEntity implements MenuProvide
             return false;
         }
 
-        this.itemHandler.getStackInSlot(PAPER_INPUT_SLOT).shrink(1);
+        // Consumir o Papel corretamente
+        ItemStack paperStack = this.itemHandler.getStackInSlot(PAPER_INPUT_SLOT).copy();
+        paperStack.shrink(1);
+        this.itemHandler.setStackInSlot(PAPER_INPUT_SLOT, paperStack);
 
-        for (int j = 0; j < RESEARCH_ELEMENTS.length; j++) {
-            if (itemHandler.getStackInSlot(j).isEmpty() || itemHandler.getStackInSlot(j).getItem() instanceof BucketItem)  {
-                continue;
-            }
-            itemHandler.getStackInSlot(j).shrink(1);
+        // Consumir os componentes de pesquisa
+        for (int i : RESEARCH_ELEMENTS) {
+            ItemStack s = itemHandler.getStackInSlot(i);
+            if (s.isEmpty() || s.getItem() instanceof BucketItem) continue;
+
+            ItemStack componentCopy = s.copy();
+            componentCopy.shrink(1);
+            itemHandler.setStackInSlot(i, componentCopy);
         }
 
+        this.setChanged();
+        if (level != null) {
+            level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
+        }
         return true;
     }
 
     private boolean consumeInk() {
         ItemStack inkStack = this.itemHandler.getStackInSlot(INK_AND_QUILL_SLOT);
+
         if (inkStack.isEmpty() || !inkStack.is(ResearchItemsRegistry.INK_AND_QUILL.get())) {
             return false;
         }
 
-        int currentDamage = inkStack.getDamageValue();
-        int newDamage = currentDamage + 1;
-        if (newDamage >= inkStack.getMaxDamage()) {
+        // 1. Criamos uma cópia para manipular com segurança
+        ItemStack copy = inkStack.copy();
+        int newDamage = copy.getDamageValue() + 1;
+
+        if (newDamage >= copy.getMaxDamage()) {
+            // Substitui pelo frasco vazio
             this.itemHandler.setStackInSlot(INK_AND_QUILL_SLOT, new ItemStack(ResearchItemsRegistry.EMPTY_INK_AND_QUILL.get()));
         } else {
-            inkStack.setDamageValue(newDamage);
+            // Aplica o dano e REINSERE no slot para forçar a atualização
+            copy.setDamageValue(newDamage);
+            this.itemHandler.setStackInSlot(INK_AND_QUILL_SLOT, copy);
         }
+
+        // Força o bloco a salvar os dados
+        this.setChanged();
         return true;
     }
 
@@ -661,31 +734,6 @@ public class ResearchTableBlockEntity extends BlockEntity implements MenuProvide
             for (int i = 0; i < slots; i++) {
                 lastStacks[i] = ItemStack.EMPTY;
             }
-        }
-
-        @Override
-        protected void onContentsChanged(int slot) {
-            super.onContentsChanged(slot);
-            ItemStack previous = lastStacks[slot];
-            ItemStack current = getStackInSlot(slot);
-
-            if (previous.isEmpty() && !current.isEmpty()) {
-                if (!hasRecipe()) {
-                    ResearchTableBlockEntity.this.removeResult();
-                    lastStacks[slot] = current.copy();
-                    return;
-                }
-                ResearchTableBlockEntity.this.popResult();
-            } else if (!previous.isEmpty() && current.isEmpty()) {
-                ResearchTableBlockEntity.this.removeResult();
-            } else if (!ItemStack.isSameItemSameTags(previous, current)) {
-                ResearchTableBlockEntity.this.popResult();
-            } else {
-                ResearchTableBlockEntity.this.removeResult();
-                ResearchTableBlockEntity.this.popResult();
-            }
-
-            lastStacks[slot] = current.copy();
         }
     }
 }
