@@ -1,6 +1,7 @@
 package net.hirukarogue.curiosityresearches.researchtable.researchtablemenu;
 
 import net.hirukarogue.curiosityresearches.CuriosityMod;
+import net.hirukarogue.curiosityresearches.researchtable.researchtablemenu.menus.ResearchMenu;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraftforge.common.extensions.IForgeMenuType;

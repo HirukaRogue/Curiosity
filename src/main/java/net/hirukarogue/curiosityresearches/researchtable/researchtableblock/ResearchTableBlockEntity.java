@@ -8,7 +8,7 @@ import net.hirukarogue.curiosityresearches.recipes.ResearchRecipes;
 import net.hirukarogue.curiosityresearches.records.Knowledge.Knowledge;
 import net.hirukarogue.curiosityresearches.records.Knowledge.Unlocks;
 import net.hirukarogue.curiosityresearches.researchparches.ResearchItemsRegistry;
-import net.hirukarogue.curiosityresearches.researchtable.researchtablemenu.ResearchMenu;
+import net.hirukarogue.curiosityresearches.researchtable.researchtablemenu.menus.ResearchMenu;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
@@ -605,6 +605,8 @@ public class ResearchTableBlockEntity extends BlockEntity implements MenuProvide
         List<ResearchRecipes> allRecipes = this.level.getRecipeManager().getAllRecipesFor(ResearchRecipes.Type.INSTANCE);
         List<ResearchRecipes> matches = new java.util.ArrayList<>();
 
+        List<Knowledge> playerKnowledges = KnowledgeHelper.getPlayerKnowledge(this.player);
+
         for (ResearchRecipes r : allRecipes) {
             boolean ok = false;
             List<Item> requiredItems = new ArrayList<>();
@@ -636,6 +638,16 @@ public class ResearchTableBlockEntity extends BlockEntity implements MenuProvide
 
                 ok = requiredItems.contains(itemHandler.getStackInSlot(i).getItem());
             }
+
+            if (ok) {
+                for (Knowledge k : playerKnowledges) {
+                    if (k.key().equals(r.getKnowledgeKey())) {
+                        ok = false;
+                        break;
+                    }
+                }
+            }
+
             if (ok) matches.add(r);
         }
 
@@ -707,6 +719,13 @@ public class ResearchTableBlockEntity extends BlockEntity implements MenuProvide
         }
 
         CuriosityMod.LOGGER.debug("recipe: " + this.level.getRecipeManager().getRecipeFor(ResearchRecipes.Type.INSTANCE, inventory, level));
+
+        List<Knowledge> playerKnowledges = KnowledgeHelper.getPlayerKnowledge(this.player);
+        for (Knowledge k : playerKnowledges) {
+            if (k.key().equals(this.level.getRecipeManager().getRecipeFor(ResearchRecipes.Type.INSTANCE, inventory, level).get().getKnowledgeKey())) {
+                return Optional.empty();
+            }
+        }
 
         return this.level.getRecipeManager().getRecipeFor(ResearchRecipes.Type.INSTANCE, inventory, level);
     }

@@ -1,8 +1,9 @@
-package net.hirukarogue.curiosityresearches.researchtable.researchtablemenu;
+package net.hirukarogue.curiosityresearches.researchtable.researchtablemenu.menus;
 
 import net.hirukarogue.curiosityresearches.researchparches.ResearchItemsRegistry;
 import net.hirukarogue.curiosityresearches.researchtable.researchtableblock.ResearchTableBlockEntity;
 import net.hirukarogue.curiosityresearches.researchtable.ResearchTableRegistry;
+import net.hirukarogue.curiosityresearches.researchtable.researchtablemenu.ResearchMenuType;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;

@@ -9,7 +9,7 @@ import net.hirukarogue.curiosityresearches.records.ResearchNotesData;
 import net.hirukarogue.curiosityresearches.researchparches.ResearchItemsRegistry;
 import net.hirukarogue.curiosityresearches.researchtable.*;
 import net.hirukarogue.curiosityresearches.researchtable.researchtableblock.ResearchTableEntity;
-import net.hirukarogue.curiosityresearches.researchtable.researchtablemenu.ResearchMenuScreen;
+import net.hirukarogue.curiosityresearches.researchtable.researchtablemenu.tabsandscreens.ResearchMenuScreen;
 import net.hirukarogue.curiosityresearches.researchtable.researchtablemenu.ResearchMenuType;
 import net.hirukarogue.curiosityresearches.records.Knowledge.Knowledge;
 import net.minecraft.client.gui.screens.MenuScreens;
@@ -28,8 +28,6 @@ import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.network.NetworkRegistry;
-import net.minecraftforge.network.simple.SimpleChannel;
 import net.minecraftforge.registries.DataPackRegistryEvent;
 import org.slf4j.Logger;
 

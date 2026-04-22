@@ -1,10 +1,11 @@
-package net.hirukarogue.curiosityresearches.researchtable.researchtablemenu;
+package net.hirukarogue.curiosityresearches.researchtable.researchtablemenu.tabsandscreens.screens;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.hirukarogue.curiosityresearches.CuriosityMod;
 import net.hirukarogue.curiosityresearches.network.ponderPackets.C2SPonderPacket;
 import net.hirukarogue.curiosityresearches.network.PacketHandler;
 import net.hirukarogue.curiosityresearches.network.researchPacket.C2SResearchPacket;
+import net.hirukarogue.curiosityresearches.researchtable.researchtablemenu.menus.ResearchMenu;
 import net.hirukarogue.curiosityresearches.researchtable.researchtablemenu.buttons.PonderButton;
 import net.hirukarogue.curiosityresearches.researchtable.researchtablemenu.buttons.ResearchButton;
 import net.minecraft.client.gui.GuiGraphics;
@@ -14,14 +15,14 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 
-public class ResearchMenuScreen extends AbstractContainerScreen<ResearchMenu> {
+public class ResearchingScreen extends AbstractContainerScreen<ResearchMenu> {
     private static final ResourceLocation TEXTURE =
             new ResourceLocation(CuriosityMod.MOD_ID, "textures/gui/research_gui.png");
 
     private static String ponderOutput = "";
     private int ponderTimer = 0;
 
-    public ResearchMenuScreen(ResearchMenu pMenu, Inventory pPlayerInventory, Component pTitle) {
+    public ResearchingScreen(ResearchMenu pMenu, Inventory pPlayerInventory, Component pTitle) {
         super(pMenu, pPlayerInventory, pTitle);
         this.imageHeight = 197;
     }

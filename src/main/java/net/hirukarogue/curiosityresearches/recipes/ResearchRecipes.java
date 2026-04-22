@@ -128,6 +128,10 @@ public class ResearchRecipes implements Recipe<ResearchComponentContainer> {
         return true;
     }
 
+    public String getKnowledgeKey() {
+        return knowledge;
+    }
+
     public NonNullList<Component> getComponents() {
         return researchComponents;
     }
