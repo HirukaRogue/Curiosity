@@ -2,13 +2,15 @@ package net.hirukarogue.curiosityresearches.researchtable.researchtableblock;
 
 import com.mojang.datafixers.util.Either;
 import net.hirukarogue.curiosityresearches.CuriosityMod;
+import net.hirukarogue.curiosityresearches.miscellaneous.RomanConversor;
 import net.hirukarogue.curiosityresearches.miscellaneous.data.KnowledgeHelper;
 import net.hirukarogue.curiosityresearches.miscellaneous.researchcomponent.ResearchComponentContainer;
 import net.hirukarogue.curiosityresearches.recipes.ResearchRecipes;
 import net.hirukarogue.curiosityresearches.records.Knowledge.Knowledge;
 import net.hirukarogue.curiosityresearches.records.Knowledge.Unlocks;
+import net.hirukarogue.curiosityresearches.records.ResearchParchmentData;
 import net.hirukarogue.curiosityresearches.researchparches.ResearchItemsRegistry;
-import net.hirukarogue.curiosityresearches.researchtable.researchtablemenu.menus.ResearchMenu;
+import net.hirukarogue.curiosityresearches.researchtable.researchtablemenu.tabsscreensandmenus.GeneralResearchMenu;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
@@ -115,7 +117,7 @@ public class ResearchTableBlockEntity extends BlockEntity implements MenuProvide
     @Override
     public AbstractContainerMenu createMenu(int pContainerId, Inventory inventory, Player player) {
         this.player = player;
-        return new ResearchMenu(pContainerId, inventory, this);
+        return new GeneralResearchMenu(pContainerId, inventory, this);
     }
 
     @Override
@@ -176,6 +178,33 @@ public class ResearchTableBlockEntity extends BlockEntity implements MenuProvide
             this.itemHandler.setStackInSlot(PAPER_OUTPUT_SLOT, result);
         }
         isProcessing = false;
+    }
+
+    public void shareKnowledge(Knowledge knowledge) {
+        if (level == null || level.isClientSide()) {
+            return;
+        }
+
+        if (this.player == null) {
+            return;
+        }
+
+        if (!this.itemHandler.getStackInSlot(PAPER_OUTPUT_SLOT).isEmpty()) return;
+
+        if (this.itemHandler.getStackInSlot(PAPER_INPUT_SLOT).isEmpty() || !this.itemHandler.getStackInSlot(INK_AND_QUILL_SLOT).is(ResearchItemsRegistry.INK_AND_QUILL.get())) {
+            return;
+        }
+
+        ItemStack sharedResearch = new ItemStack(ResearchItemsRegistry.COMMON_RESEARCH.get());
+
+        ResearchParchmentData rpData = new ResearchParchmentData(knowledge.key(),   "Shared Knowledge: " + knowledge.knowledgeName() + " " + RomanConversor.toRoman(knowledge.level()));
+
+        ResearchParchmentData.save(sharedResearch, rpData);
+
+        this.itemHandler.setStackInSlot(PAPER_OUTPUT_SLOT, sharedResearch);
+
+        itemHandler.getStackInSlot(PAPER_INPUT_SLOT).shrink(1);
+        consumeInk();
     }
 
     public void consumeForResearch() {

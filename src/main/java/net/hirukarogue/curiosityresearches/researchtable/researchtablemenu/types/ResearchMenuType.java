@@ -1,7 +1,7 @@
-package net.hirukarogue.curiosityresearches.researchtable.researchtablemenu;
+package net.hirukarogue.curiosityresearches.researchtable.researchtablemenu.types;
 
 import net.hirukarogue.curiosityresearches.CuriosityMod;
-import net.hirukarogue.curiosityresearches.researchtable.researchtablemenu.menus.ResearchMenu;
+import net.hirukarogue.curiosityresearches.researchtable.researchtablemenu.tabsscreensandmenus.GeneralResearchMenu;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraftforge.common.extensions.IForgeMenuType;
@@ -15,8 +15,8 @@ public class ResearchMenuType {
     public static final DeferredRegister<MenuType<?>> MENUS =
             DeferredRegister.create(ForgeRegistries.MENU_TYPES, CuriosityMod.MOD_ID);
 
-    public static final RegistryObject<MenuType<ResearchMenu>> RESEARCH_MENU =
-            registerMenuTypes("research_menu", ResearchMenu::new);
+    public static final RegistryObject<MenuType<GeneralResearchMenu>> RESEARCH_MENU =
+            registerMenuTypes("research_menu", GeneralResearchMenu::new);
 
     private static <T extends AbstractContainerMenu>RegistryObject<MenuType<T>> registerMenuTypes(String name, IContainerFactory<T> factory) {
         return MENUS.register(name, () -> IForgeMenuType.create(factory));

@@ -1,39 +1,83 @@
-package net.hirukarogue.curiosityresearches.researchtable.researchtablemenu.menus;
+package net.hirukarogue.curiosityresearches.researchtable.researchtablemenu.tabsscreensandmenus;
 
+import net.hirukarogue.curiosityresearches.miscellaneous.RomanConversor;
+import net.hirukarogue.curiosityresearches.records.Knowledge.Knowledge;
+import net.hirukarogue.curiosityresearches.records.ResearchParchmentData;
 import net.hirukarogue.curiosityresearches.researchparches.ResearchItemsRegistry;
-import net.hirukarogue.curiosityresearches.researchtable.researchtableblock.ResearchTableBlockEntity;
 import net.hirukarogue.curiosityresearches.researchtable.ResearchTableRegistry;
-import net.hirukarogue.curiosityresearches.researchtable.researchtablemenu.ResearchMenuType;
+import net.hirukarogue.curiosityresearches.researchtable.researchtableblock.ResearchTableBlockEntity;
+import net.hirukarogue.curiosityresearches.researchtable.researchtablemenu.types.ResearchMenuType;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.*;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerLevelAccess;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.items.SlotItemHandler;
-import org.slf4j.LoggerFactory;
 
-public class ResearchMenu extends AbstractContainerMenu {
+import java.util.function.Supplier;
+
+public class GeneralResearchMenu extends AbstractContainerMenu {
     public final ResearchTableBlockEntity blockEntity;
     public final Level level;
-    private static final org.slf4j.Logger log = LoggerFactory.getLogger(ResearchMenu.class);
+    private final Inventory playerInventory;
+    private Tabs selectedTab;
 
-    public ResearchMenu(int pContainerId, Inventory inv, FriendlyByteBuf extraData) {
-        this(pContainerId, inv, inv.player.level().getBlockEntity(extraData.readBlockPos()));
+    public GeneralResearchMenu(int pContainerId, Inventory inv, FriendlyByteBuf extraData) {
+        this(pContainerId, inv, (ResearchTableBlockEntity) inv.player.level().getBlockEntity(extraData.readBlockPos()));
     }
 
-    public ResearchMenu(int pContainerId, Inventory inv, BlockEntity entity) {
-        super(ResearchMenuType.RESEARCH_MENU.get(), pContainerId);
-        checkContainerSize(inv, 9);
-        blockEntity = ((ResearchTableBlockEntity) entity);
+    public GeneralResearchMenu(int pContainerId, Inventory inv, ResearchTableBlockEntity entity) {
+        this(pContainerId, inv, entity, Tabs.RESEARCHING);
+    }
+
+    public GeneralResearchMenu(int pContainerId, Inventory inv, ResearchTableBlockEntity entity, Tabs selectedTab) {
+        super(ResearchMenuType.RESEARCH_MENU.get(), pContainerId); // Pass null for the menu type since it's not used
+        blockEntity = entity;
         this.level = inv.player.level();
+        this.playerInventory = inv;
 
-        addPlayerInventory(inv);
-        addPlayerHotbar(inv);
+        addPlayerInventory(this.playerInventory);
+        addPlayerHotbar(this.playerInventory);
 
+        this.selectedTab = selectedTab;
+
+        grabActualTab();
+    }
+
+    public void grabActualTab() {
+        switch (selectedTab) {
+            case RESEARCHING -> grabResearch();
+            //case DISCOVERY -> grabDiscovery();
+            case SHARE_KNOWLEDGE -> grabShareKnowledge();
+        }
+    }
+
+    public void changeTab(Tabs newTab) {
+        if (newTab == selectedTab) return;
+
+        // Limpar os slots atuais
+        this.slots.clear();
+
+        // Atualiza o tab selecionado e reconstrói os slots
+        this.selectedTab = newTab;
+        addPlayerInventory(this.playerInventory);
+        addPlayerHotbar(this.playerInventory);
+
+        grabActualTab();
+
+        this.broadcastChanges();
+    }
+
+    public Tabs getSelectedTab() {
+        return selectedTab;
+    }
+
+    public void grabResearch() {
         this.blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER).ifPresent(iItemHandler -> {
             this.addSlot(new SlotItemHandler(iItemHandler,0,8,86){
                 @Override
@@ -45,11 +89,6 @@ public class ResearchMenu extends AbstractContainerMenu {
                 @Override
                 public boolean mayPlace(ItemStack stack) {
                     return false;
-                }
-
-                @Override
-                public void onTake(Player pPlayer, ItemStack pStack) {
-                    super.onTake(pPlayer, pStack);
                 }
             });
             this.addSlot(new SlotItemHandler(iItemHandler,2,8,68){
@@ -66,6 +105,29 @@ public class ResearchMenu extends AbstractContainerMenu {
             this.addSlot(new SlotItemHandler(iItemHandler,7,116,45));
             this.addSlot(new SlotItemHandler(iItemHandler,8,61,77));
             this.addSlot(new SlotItemHandler(iItemHandler,9,103,76));
+        });
+    }
+
+    public void grabShareKnowledge() {
+        this.blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER).ifPresent(iItemHandler -> {
+            this.addSlot(new SlotItemHandler(iItemHandler,0,135,29){
+                @Override
+                public boolean mayPlace(ItemStack stack) {
+                    return stack.is(Items.PAPER);
+                }
+            });
+            this.addSlot(new SlotItemHandler(iItemHandler,1,144,83){
+                @Override
+                public boolean mayPlace(ItemStack stack) {
+                    return false;
+                }
+            });
+            this.addSlot(new SlotItemHandler(iItemHandler,2,153,29){
+                @Override
+                public boolean mayPlace(ItemStack stack) {
+                    return stack.is(ResearchItemsRegistry.INK_AND_QUILL.get()) || stack.is(ResearchItemsRegistry.EMPTY_INK_AND_QUILL.get());
+                }
+            });
         });
     }
 
@@ -134,6 +196,23 @@ public class ResearchMenu extends AbstractContainerMenu {
     private void addPlayerHotbar(Inventory playerInventory) {
         for (int i = 0; i < 9; ++i) {
             this.addSlot(new Slot(playerInventory, i, 8 + i * 18, 173));
+        }
+    }
+
+    public enum Tabs {
+        RESEARCHING(ResearchItemsRegistry.INK_AND_QUILL),
+        //DISCOVERY(() -> Items.COMPASS),
+        SHARE_KNOWLEDGE(ResearchItemsRegistry.COMMON_RESEARCH);
+
+        private final Supplier<?> iconSupplier;
+
+        Tabs(Supplier<?> iconSupplier) {
+            this.iconSupplier = iconSupplier;
+        }
+
+        // método que o ResearchMenuScreen procura por reflexão
+        public Supplier<?> getIcon() {
+            return iconSupplier;
         }
     }
 }

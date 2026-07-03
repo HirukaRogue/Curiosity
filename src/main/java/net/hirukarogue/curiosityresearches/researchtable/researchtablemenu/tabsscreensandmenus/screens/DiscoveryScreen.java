@@ -1,6 +1,6 @@
-package net.hirukarogue.curiosityresearches.researchtable.researchtablemenu.tabsandscreens.screens;
+package net.hirukarogue.curiosityresearches.researchtable.researchtablemenu.tabsscreensandmenus.screens;
 
-import net.hirukarogue.curiosityresearches.researchtable.researchtablemenu.menus.DiscoveryMenu;
+import net.hirukarogue.curiosityresearches.researchtable.researchtablemenu.tabsscreensandmenus.menus.DiscoveryMenu;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;

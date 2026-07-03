@@ -4,6 +4,7 @@ import net.hirukarogue.curiosityresearches.CuriosityMod;
 import net.hirukarogue.curiosityresearches.network.ponderPackets.C2SPonderPacket;
 import net.hirukarogue.curiosityresearches.network.ponderPackets.S2CPonderResponsePacket;
 import net.hirukarogue.curiosityresearches.network.researchPacket.C2SResearchPacket;
+import net.hirukarogue.curiosityresearches.network.sharePacket.C2SSharePacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkRegistry;
@@ -42,6 +43,13 @@ public class PacketHandler {
                 .encoder(C2SResearchPacket::encode)
                 .decoder(C2SResearchPacket::new)
                 .consumerMainThread(C2SResearchPacket::handle)
+                .add();
+
+        INSTANCE.messageBuilder(C2SSharePacket.class, id++,
+                NetworkDirection.PLAY_TO_SERVER)
+                .encoder(C2SSharePacket::encode)
+                .decoder(C2SSharePacket::new)
+                .consumerMainThread(C2SSharePacket::handle)
                 .add();
     }
 

@@ -1,6 +1,9 @@
 {
   "curiosity_researches.creative_tab": "Curiosity Researches Tab",
 
+  "tabs.curiosity_researches.researching": "Research",
+  "tabs.curiosity_researches.share_knowledge": "Share Knowledge",
+
   "block.curiosity_researches.research_table": "Research Table",
   "block.curiosiry.research_table": "Research",
 

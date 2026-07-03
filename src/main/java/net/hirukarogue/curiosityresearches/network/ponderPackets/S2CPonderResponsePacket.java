@@ -1,6 +1,6 @@
 package net.hirukarogue.curiosityresearches.network.ponderPackets;
 
-import net.hirukarogue.curiosityresearches.researchtable.researchtablemenu.tabsandscreens.ResearchMenuScreen;
+import net.hirukarogue.curiosityresearches.researchtable.researchtablemenu.tabsscreensandmenus.ResearchMenuScreen;
 import net.minecraft.client.Minecraft;
 
 public class S2CPonderResponsePacket {
@@ -22,7 +22,7 @@ public class S2CPonderResponsePacket {
         net.minecraftforge.network.NetworkEvent.Context context = contextSupplier.get();
         context.enqueueWork(() -> {
             if (Minecraft.getInstance().screen instanceof ResearchMenuScreen researchMenuScreen) {
-                researchMenuScreen.setPonderMessage(message);
+                ResearchMenuScreen.setPonderMessage(message);
             }
         });
         context.setPacketHandled(true);
