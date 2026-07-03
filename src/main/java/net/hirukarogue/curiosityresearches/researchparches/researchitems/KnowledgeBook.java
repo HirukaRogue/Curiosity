@@ -2,6 +2,7 @@ package net.hirukarogue.curiosityresearches.researchparches.researchitems;
 
 import com.mojang.serialization.DataResult;
 import net.hirukarogue.curiosityresearches.CuriosityMod;
+import net.hirukarogue.curiosityresearches.miscellaneous.RomanConversor;
 import net.hirukarogue.curiosityresearches.miscellaneous.data.KnowledgeHelper;
 import net.hirukarogue.curiosityresearches.records.Knowledge.Knowledge;
 import net.hirukarogue.curiosityresearches.records.KnowledgeBookData;
@@ -49,7 +50,7 @@ public class KnowledgeBook extends Item {
                     break;
                 }
                 Knowledge knowledge = bookKnowledge.get(i);
-                knowledges.append("- ").append(knowledge.knowledgeName()).append(" ").append(knowledge.level()).append("\n");
+                knowledges.append("- ").append(knowledge.knowledgeName()).append(" ").append(RomanConversor.toRoman(knowledge.level())).append("\n");
                 if (i < bookKnowledge.size() - 1) {
                     knowledges.append("\n");
                 }
@@ -72,10 +73,10 @@ public class KnowledgeBook extends Item {
             pPlayer.sendSystemMessage(Component.literal("You acquire the following knowledge from this book:"));
             for (Knowledge knowledge : bookKnowledge) {
                 if (KnowledgeHelper.playerHasKnowledge(pPlayer, knowledge)) {
-                    pPlayer.sendSystemMessage(Component.literal("- "+ knowledge.knowledgeName() + " " + knowledge.level() + "(You already learned it)"));
+                    pPlayer.sendSystemMessage(Component.literal("- "+ knowledge.knowledgeName() + " " + RomanConversor.toRoman(knowledge.level()) + "(You already learned it)"));
                     continue;
                 }
-                pPlayer.sendSystemMessage(Component.literal("- "+ knowledge.knowledgeName() + " " + knowledge.level()));
+                pPlayer.sendSystemMessage(Component.literal("- "+ knowledge.knowledgeName() + " " + RomanConversor.toRoman(knowledge.level())));
                 KnowledgeHelper.playerDiscoverKnowledge(knowledge, pPlayer);
             }
         } else {

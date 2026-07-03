@@ -2,6 +2,7 @@ package net.hirukarogue.curiosityresearches.researchparches.researchitems;
 
 import com.mojang.serialization.DataResult;
 import net.hirukarogue.curiosityresearches.CuriosityMod;
+import net.hirukarogue.curiosityresearches.miscellaneous.RomanConversor;
 import net.hirukarogue.curiosityresearches.miscellaneous.data.KnowledgeHelper;
 import net.hirukarogue.curiosityresearches.records.Knowledge.Knowledge;
 import net.hirukarogue.curiosityresearches.records.Knowledge.Unlocks;
@@ -106,7 +107,7 @@ public class ResearchParchment extends Item {
                             continue;
                         }
                         if (Objects.equals(pLevel.registryAccess().registryOrThrow(CuriosityMod.KNOWLEDGE_REGISTRY).get(rl), knowledge) && !KnowledgeHelper.playerHasKnowledge(pPlayer, k)) {
-                            pPlayer.sendSystemMessage(Component.literal("To discover this you require " + k.knowledgeName() + " " + k.level() + "!"));
+                            pPlayer.sendSystemMessage(Component.literal("To discover this you require " + k.knowledgeName() + " " + RomanConversor.toRoman(k.level()) + "!"));
                             return super.use(pLevel, pPlayer, pUsedHand);
                         }
                     }
@@ -121,7 +122,7 @@ public class ResearchParchment extends Item {
                         }
                     }
                     if (previousKnowledge != null && !KnowledgeHelper.playerHasKnowledge(pPlayer, previousKnowledge)) {
-                        pPlayer.sendSystemMessage(Component.literal("To discover this you must first learn " + previousKnowledge.knowledgeName() + " " + previousKnowledge.level() + "!"));
+                        pPlayer.sendSystemMessage(Component.literal("To discover this you must first learn " + previousKnowledge.knowledgeName() + " " + RomanConversor.toRoman(previousKnowledge.level()) + "!"));
                         return super.use(pLevel, pPlayer, pUsedHand);
                     }
                 }
@@ -132,7 +133,7 @@ public class ResearchParchment extends Item {
                 return super.use(pLevel, pPlayer, pUsedHand);
             }
 
-            pPlayer.sendSystemMessage(Component.literal("You learned " + knowledge.knowledgeName() + " " + knowledge.level() + "!"));
+            pPlayer.sendSystemMessage(Component.literal("You learned " + knowledge.knowledgeName() + " " + RomanConversor.toRoman(knowledge.level()) + "!"));
             pPlayer.getItemInHand(pUsedHand).shrink(1);
             KnowledgeHelper.playerDiscoverKnowledge(knowledge, pPlayer);
         } else {
