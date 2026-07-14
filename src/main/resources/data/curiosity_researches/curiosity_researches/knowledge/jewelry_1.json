@@ -1,5 +1,6 @@
 {
   "knowledge_name": "jewelry",
+  "icon": "minecraft:diamond",
   "level": 1,
   "knowledge_description": ["The basics about jewelry crafting and materials."]
 }

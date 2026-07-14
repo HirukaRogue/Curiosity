@@ -1,46 +1,94 @@
 
-Source installation information for modders
+Curiosity researches
 -------------------------------------------
-This code follows the Minecraft Forge installation methodology. It will apply
-some small patches to the vanilla MCP source code, giving you and it access 
-to some of the data and functions you need to build a successful mod.
+the knowledge and knowledge recipe for jewelry are just examples.
+You can replace them with your own knowledge and recipes as needed.
+Or just delete them if you don't need them.
+Make sure to update any references to these knowledge and recipes in your datapacks or mods accordingly.
+Feel free to customize the content to better suit your project's theme and requirements!
+Enjoy your modding!
 
-Note also that the patches are built against "un-renamed" MCP source code (aka
-SRG Names) - this means that you will not be able to read them directly against
-normal code.
-
-Setup Process:
+loot table functions you can use for knowledge books:
 ==============================
 
-Step 1: Open your command-line and browse to the folder where you extracted the zip file.
+setRandomKnowledge -> set a random amount of knowledge from the given tags
+syntax:
+{
+    "function": "curiosity_researches:set_random_knowledge",
+    "tags": <Your knowledge book tag list here>,
+    "min": <Minimum number of knowledge to set>,
+    "max": <Maximum number of knowledge to set>
+    "custom_name": <Optional custom name for the knowledge book>
+}
+setKnowledge -> set all knowledge from the given tags
+syntax:
+{
+    "function": "curiosity_researches:set_knowledge",
+    "tags": <Your knowledge book tag list here>
+    "custom_name": <Optional custom name for the knowledge book>
+}
 
-Step 2: You're left with a choice.
-If you prefer to use Eclipse:
-1. Run the following command: `./gradlew genEclipseRuns`
-2. Open Eclipse, Import > Existing Gradle Project > Select Folder 
-   or run `gradlew eclipse` to generate the project.
+Non loot table stuffs:
+==============================
 
-If you prefer to use IntelliJ:
-1. Open IDEA, and import project.
-2. Select your build.gradle file and have it import.
-3. Run the following command: `./gradlew genIntellijRuns`
-4. Refresh the Gradle Project in IDEA if required.
+research notes to be used on researches:
+With this you can add blocks, biomes, entities, items and dimensions to the research notes.
+You can also add coordinates to the research notes.
+syntax:
+{
+    "target": <The optional research target to add to the research notes, Resource location format>,
+    "coordinates": {
+        "x": <The x coordinate, optional>,
+        "x2": <The x2 coordinate, optional>,
+        "y": <The y coordinate, optional>,
+        "y2": <The y2 coordinate, optional>.
+        "z": <The z coordinate, optional>,
+        "z2": <The z2 coordinate, optional>
+    }
+    "custom_name": <Optional custom name for the research note>
+    "note": <The note text array to add to the research note>
+}
 
-If at any point you are missing libraries in your IDE, or you've run into problems you can 
-run `gradlew --refresh-dependencies` to refresh the local cache. `gradlew clean` to reset everything 
-(this does not affect your code) and then start the process again.
+Knowledge is the base for discoveries.
+You can create your own knowledge by creating a json file in the data/curiosity_researches/knowledge folder.
+Here is an example of a knowledge json file:
+{
+  "knowledge_name": "jewelry",
+  "icon": "minecraft:diamond",
+  "level": 1,
+  "knowledge_description": ["The basics about jewelry crafting and materials."]
+}
 
-Mapping Names:
-=============================
-By default, the MDK is configured to use the official mapping names from Mojang for methods and fields 
-in the Minecraft codebase. These names are covered by a specific license. All modders should be aware of this
-license, if you do not agree with it you can change your mapping names to other crowdsourced names in your 
-build.gradle. For the latest license text, refer to the mapping file itself, or the reference copy here:
-https://github.com/MinecraftForge/MCPConfig/blob/master/Mojang.md
+Unlocks defines what the knowledge unlocks.
+syntax:
+{
+  "knowledge_name": <Knowledge Name>,
+  "icon": <Resource location of an icon to be decorative, that's an optional field>
+  "level": <Knowledge Level>,
+  "unlocks": <Resource location array of what this knowledge unlocks>
+}
 
-Additional Resources: 
-=========================
-Community Documentation: https://docs.minecraftforge.net/en/1.20.1/gettingstarted/
-LexManos' Install Video: https://youtu.be/8VEdtQLuLO0
-Forge Forums: https://forums.minecraftforge.net/
-Forge Discord: https://discord.minecraftforge.net/
+To make a research parchment recipe, create a json file in the data/curiosity_researches/recipes folder.
+syntax:
+{
+  "type": "curiosity_researches:research_parchment",
+  "keys": {
+    "<key>": {
+      "component": "<item/tag>",
+      "knowledge_key": "<<knowledge_name>_<level>, optional, only when the item is an incomplete research parchment>",
+      "note_location": "<resource_location, optional, only when the item is a research note>",
+      "count": <item count, optional>
+      "consume": <true/false, optional, default: true>
+    }
+    ...
+  },
+    "pattern": [
+        "<pattern row 1, size 2>",
+        "<pattern row 2, size 3>",
+        "<pattern row 3, size 2>"
+    ],
+    "knowledge": <Knowledge key string, syntax: "<knowledge_name>_<level>">,
+    "tier": <Research tier, entries: incomplete, common, uncommon, rare, epic, legendary, MYTHIC>,
+    "custom_name": <Optional custom name for the research parchment>,
+    "paper_required": <quantity of paper required>
+}
