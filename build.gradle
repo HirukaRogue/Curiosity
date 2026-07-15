@@ -205,7 +205,7 @@ idea {
 tasks.named('processResources', ProcessResources) {
     // Substitua 'meu_mod_id' pelo ID do seu mod
     // Isso exclui qualquer coisa dentro da pasta 'testes' dentro de data ou assets
-    exclude { it.file.absolutePath.contains('src/test') }
+    exclude { it.file.absolutePath.contains('src/test/resources') }
 
     // Se quiser ser mais específico, pode usar:
     // exclude 'data/meu_mod_id/testes/**'
